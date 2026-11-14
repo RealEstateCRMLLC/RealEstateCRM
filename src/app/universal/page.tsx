@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SECTOR_PACKS } from "@/lib/universal/sectors";
 import { LANGUAGES, ADD_ONS, t } from "@/lib/universal/platform";
+import UniversalProvisioner from "@/components/universal/UniversalProvisioner";
 
 export const metadata: Metadata = {
   title: "Universal CRM for Every Business | United Beats LLC on HyperNexus",
@@ -24,12 +25,34 @@ export default function UniversalPage() {
             own words — your customers, your stages, your templates — in your language, under your brand.
             Three taps to anything, for every generation.
           </p>
-          <p className="mt-4 text-sm text-secondary">{t("en", "tagline")} • {t("es", "tagline")} • {t("zh", "tagline")}</p>
+          <p className="mt-4 text-sm text-secondary">
+            {t("en", "tagline")} • {t("es", "tagline")} • {t("ar", "tagline")} • {t("zh", "tagline")}
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a href="#provision" className="bg-secondary px-5 py-2.5 text-sm font-bold text-black">
+              Configure &amp; Preview Your Sector
+            </a>
+            <Link href="/dashboard/settings?tab=sector-pack" className="border border-accent-foreground/40 px-5 py-2.5 text-sm font-semibold">
+              Workspace Operators: Open Provisioning Console
+            </Link>
+          </div>
         </div>
       </section>
       <div className="mx-auto max-w-6xl space-y-14 px-4 py-12 md:px-6">
+        <section id="provision" className="space-y-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-secondary">Interactive Tenant Provisioner</p>
+            <h2 className="mt-1 text-3xl font-bold">Configure your sector pack, brand &amp; language live</h2>
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+              Choose one of the 8 launch industries, customize your vocabulary and brand colors, test all 16 launch
+              languages (including automatic right-to-left Arabic), and toggle United Beats LLC add-ons.
+            </p>
+          </div>
+          <UniversalProvisioner mode="public" />
+        </section>
+
         <section>
-          <h2 className="text-3xl font-bold">Pick your sector — we tailor the rest</h2>
+          <h2 className="text-3xl font-bold">All 8 launch sector packs — pure configuration, never a rebuild</h2>
           <div className="mt-6 space-y-4">
             {SECTOR_PACKS.map((s) => (
               <article key={s.id} className="border border-border p-5">
@@ -45,7 +68,7 @@ export default function UniversalPage() {
           </div>
         </section>
         <section>
-          <h2 className="text-2xl font-bold">Every language, one tap</h2>
+          <h2 className="text-2xl font-bold">Every language, one tap (16 launch locales)</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
             {LANGUAGES.map((l) => `${l.label} (${l.native})`).join(" • ")}. Arabic ships right-to-left.
             Your whole team and every customer see the CRM in their own words.

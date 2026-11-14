@@ -1,3 +1,12 @@
+## v0.65.0 (2026-11-14)
+
+### Universal CRM Phase 2 — Tenant Provisioning, 16-Language Dictionary, Sign-In & Test Resilience
+- **Tenant Provisioning Engine (`docs/UNIVERSAL_CRM.md` Rollout #2):** Added client-safe `src/lib/universal/tenant.ts`, server-only `src/lib/universal/tenant-store.ts`, and `src/app/api/universal/tenant/route.ts` (`GET` public catalog + workspace resolver; `PUT` RBAC-guarded `manage:workspace` provisioning that updates Prisma `Workspace` white-label brand fields alongside zero-migration `data/universal-tenants.json` sector/locale/UX/add-on state).
+- **Interactive Configurator & Inline Settings Tab:** Built `src/components/universal/UniversalProvisioner.tsx` and wired it both publicly on `/universal` (with live white-label preview, JSON pack manifest export, one-click workspace apply for signed-in admins, and inbound B2B pilot request capture via `POST /api/leads/external`) and inline inside `/dashboard/settings?tab=sector-pack` (`SettingsTabs.tsx`, now 11 inline domains with tooltips). Added Universal CRM cards to `CommandCenter.tsx` and aligned sub-project prod port tooltips (`3218`, `3219`, `3221 / API 3012`).
+- **Complete 16-Language Dictionary & RTL:** Expanded `STRINGS` in `src/lib/universal/platform.ts` so all 16 launch languages (`en/es/fr/de/pt/it/nl/pl/ar/hi/zh/ja/ko/ru/tr/vi`) resolve all core shell keys, with automatic `dir="rtl"` preview on Arabic (`ar`), plus `getLanguage()` and `calculateAddOnSelection()`.
+- **Sign-In Form Hydration / Headless Fix:** Updated `src/components/auth/signin-form.tsx` to fall back to `FormData` values when React `onChange` was bypassed (autofill, password managers, headless browsers) and switched `signIn('credentials')` to `redirect: false` with inline error display and clean App Router navigation.
+- **Self-Contained Test Suite (`39 pass / 0 fail`):** Updated `tests/e2e-api.test.mts` and `tests/money-paths.test.mts` to honor `TEST_BASE_URL` and cleanly skip live HTTP suites when local `:3000` is off per owner rule (`REQUIRE_LIVE_SERVER=1` enforces live server), extracted `isDealStage` unit test, and expanded `tests/universal.test.mts` (incl. automated 36/36 `CommandCenter` directory coverage check). Synced `VERSION.md`, `package.json`, and `package-lock.json` to `0.65.0`.
+
 ## v0.64.14 (2026-11-14)
 
 ### Below-normal rebuild verification (docs)

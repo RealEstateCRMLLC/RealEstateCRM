@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import type { FormEvent } from 'react';
 
 type SignInFormProps = {
@@ -15,27 +16,52 @@ const errorMessages: Record<string, string> = {
 };
 
 export function SignInForm({ error }: SignInFormProps) {
+  const router = useRouter();
   const { status } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [clientError, setClientError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const message = useMemo(() => {
-    if (!error) return null;
-    return errorMessages[error] ?? errorMessages.default;
-  }, [error]);
+    const activeError = clientError ?? error;
+    if (!activeError) return null;
+    return errorMessages[activeError] ?? errorMessages.default;
+  }, [clientError, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitting(true);
+    setClientError(null);
 
+    // Read FormData as fallback so browser autofill, password managers, and
+    // headless DOM automation work even if React onChange did not fire first.
+    const formData = new FormData(event.currentTarget);
+    const submittedEmail = (email || String(formData.get('email') ?? '')).trim();
+    const submittedPassword = password || String(formData.get('password') ?? '');
+
+    if (!submittedEmail || !submittedPassword) {
+      setClientError('CredentialsSignin');
+      return;
+    }
+
+    setSubmitting(true);
     try {
-      await signIn('credentials', {
-        email,
-        password,
+      const res = await signIn('credentials', {
+        email: submittedEmail,
+        password: submittedPassword,
         callbackUrl: '/dashboard',
-        redirect: true,
+        redirect: false,
       });
+
+      if (res?.error) {
+        setClientError(res.error);
+        return;
+      }
+
+      if (res?.ok) {
+        router.push('/dashboard');
+        router.refresh();
+      }
     } finally {
       setSubmitting(false);
     }
@@ -56,7 +82,7 @@ export function SignInForm({ error }: SignInFormProps) {
         </div>
 
         {message ? (
-          <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
+          <div role="alert" className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
             {message}
           </div>
         ) : null}

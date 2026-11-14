@@ -25,7 +25,7 @@ One rule for all: **three taps to any action**, plain words (the pack's own voca
 Platform fee per tenant + add-ons. Sector customization and new packs are United Beats LLC services (Bob & Lum). The TSF trust system is the proof: a real-estate-born add-on now reusable by Legal and Finance packs.
 
 ## Rollout
-1. ✅ Core extracted as packs + i18n + add-on registry + `/universal` showcase.
-2. Tenant provisioning: workspace → sector pack → brand → language (builds on existing WorkspaceBranding).
+1. ✅ Core extracted as packs + i18n + add-on registry + `/universal` showcase (`v0.64.0`).
+2. ✅ Tenant provisioning: workspace → sector pack → brand → language + 3-generation UX + United Beats add-on configurator (`v0.65.0`: `src/lib/universal/tenant.ts`, `src/lib/universal/tenant-store.ts`, `GET/PUT /api/universal/tenant`, inline `/dashboard/settings?tab=sector-pack`, interactive `/universal` configurator + B2B pilot lead funnel, full 16-language UI dictionary incl. RTL Arabic).
 3. First non-real-estate pilot tenant; pack feedback loop.
 4. Add-on billing (Stripe), hard sector-template library, more languages.

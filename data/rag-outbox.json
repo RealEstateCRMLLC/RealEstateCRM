@@ -1,0 +1,54 @@
+[
+  {
+    "workspaceId": "excel-legacy-team",
+    "entityType": "contact",
+    "entityId": "cmuvnpwdp0001d6d8toxyikl8",
+    "document": "Contact Batch Test\nEmail: batch@test.com\nPhone: no phone",
+    "metadata": {
+      "contactId": "cmuvnpwdp0001d6d8toxyikl8",
+      "email": "batch@test.com",
+      "phone": null
+    },
+    "id": "contact:cmuvnpwdp0001d6d8toxyikl8",
+    "createdAt": "2026-10-05T19:42:51.728Z",
+    "status": "queued",
+    "destination": "local",
+    "provider": "local"
+  },
+  {
+    "workspaceId": "excel-legacy-team",
+    "entityType": "lead",
+    "entityId": "cmuvnpwe10003d6d88osyz5ep",
+    "document": "Lead cmuvnpwe10003d6d88osyz5ep\nContact profile: Batch Test / batch@test.com / no phone\nSource: Agent Website\nStatus: NEW\nScore: 70",
+    "metadata": {
+      "leadId": "cmuvnpwe10003d6d88osyz5ep",
+      "contactEmail": "batch@test.com",
+      "status": "NEW",
+      "source": "Agent Website",
+      "score": 70
+    },
+    "id": "lead:cmuvnpwe10003d6d88osyz5ep",
+    "createdAt": "2026-10-05T19:42:51.662Z",
+    "status": "queued",
+    "destination": "local",
+    "provider": "local"
+  },
+  {
+    "workspaceId": "excel-legacy-team",
+    "entityType": "lead",
+    "entityId": "cmuvidruh000rd6usoeb5flm3",
+    "document": "Lead cmuvidruh000rd6usoeb5flm3\nContact profile: External Lead / no email / no phone\nSource: custom Webhook\nStatus: NEW\nScore: 80",
+    "metadata": {
+      "leadId": "cmuvidruh000rd6usoeb5flm3",
+      "contactEmail": null,
+      "status": "NEW",
+      "source": "custom Webhook",
+      "score": 80
+    },
+    "id": "lead:cmuvidruh000rd6usoeb5flm3",
+    "createdAt": "2026-10-05T17:13:27.442Z",
+    "status": "queued",
+    "destination": "local",
+    "provider": "local"
+  }
+]

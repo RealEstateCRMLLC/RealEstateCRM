@@ -562,13 +562,33 @@ const SECTIONS: Section[] = [
     tagline: 'IDX websites, client transaction portal, inline settings console, and operator training',
     features: [
       {
-        label: 'Unified Settings Console (All 10 Tabs)',
-        description: 'Inline Integrations, AI Keys, Voice, Email, Branding, Team, Routing, Memory, MCP & Folders.',
+        label: 'Unified Settings Console (All 11 Tabs)',
+        description: 'Inline Integrations, AI Keys, Voice, Email, Branding, Universal Sector & Locale, Team, Routing, Memory, MCP & Folders.',
         href: '/dashboard/settings',
         icon: '⚙️',
         tooltip:
-          'Single-page settings console rendering every configuration form directly inline without page hops.',
+          'Single-page settings console rendering every configuration form — including Universal CRM Sector Pack & 16-Language Provisioning — directly inline without page hops.',
         priority: 0,
+      },
+      {
+        label: 'Universal CRM Sector & Language Provisioning',
+        description: 'Configure your workspace sector pack (8 industries), 16 launch languages (incl. RTL Arabic), and United Beats add-ons.',
+        href: '/dashboard/settings?tab=sector-pack',
+        icon: '🌍',
+        tooltip:
+          'Provision any workspace across Real Estate, Healthcare, Legal, Finance, Construction, Retail, Hospitality, or Home Services with plain-language vocabulary, compliance guardrails, and live localization.',
+        priority: 1,
+        badge: 'UNIVERSAL',
+      },
+      {
+        label: 'Universal CRM Public Showcase & Configurator',
+        description: 'External multi-sector white-label configurator (`/universal`) with B2B pilot blueprint intake.',
+        href: '/universal',
+        external: true,
+        icon: '🏛️',
+        tooltip:
+          'Opens the public Universal CRM showcase by United Beats LLC (Bob & Lum), featuring the live 8-sector / 16-language configurator and inbound B2B pilot request funnel.',
+        priority: 2,
       },
       {
         label: 'Agent IDX Websites',
@@ -710,7 +730,7 @@ const SECTIONS: Section[] = [
         external: true,
         icon: '🤖',
         tooltip:
-          'Submodule apps/aicrm (RealEstateCRMLLC/aicrm). Runs on local port 3007 (prod 3216) with tracked SQLite dev.db.',
+          'Submodule apps/aicrm (RealEstateCRMLLC/aicrm). Runs on local port 3007 (prod 3218 at /aicrm/) with tracked SQLite dev.db.',
         priority: 5,
         badge: ':3007',
       },
@@ -722,7 +742,7 @@ const SECTIONS: Section[] = [
         external: true,
         icon: '☎️',
         tooltip:
-          'Submodule apps/leadcaller (RealEstateCRMLLC/realestateleadcaller). Runs on local port 3008 (prod 3217).',
+          'Submodule apps/leadcaller (RealEstateCRMLLC/realestateleadcaller). Runs on local port 3008 (prod 3219 at /leadcaller/).',
         priority: 6,
         badge: ':3008',
       },
@@ -734,7 +754,7 @@ const SECTIONS: Section[] = [
         external: true,
         icon: '🧪',
         tooltip:
-          'Submodule apps/prototype (RealEstateCRMLLC/realestateprototype). API runs on local port 3009.',
+          'Submodule apps/prototype (RealEstateCRMLLC/realestateprototype). Local API port 3009; production client port 3221 + API 3012 at /prototype/.',
         priority: 7,
         badge: ':3009',
       },

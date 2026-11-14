@@ -1,0 +1,55 @@
+{
+  "workflows": {
+    "test-workflow-id": {
+      "workflowId": "test-workflow-id",
+      "updatedAt": "2026-10-04T19:05:52.203Z",
+      "snapshot": {
+        "draft": {},
+        "activity": [],
+        "lastSavedAt": null,
+        "banner": "Draft ready for editing.",
+        "status": "active",
+        "name": "Updated Workflow"
+      }
+    },
+    "wf-test": {
+      "workflowId": "wf-test",
+      "updatedAt": "2026-10-05T04:00:54.420Z",
+      "snapshot": {
+        "draft": {},
+        "activity": [],
+        "lastSavedAt": null,
+        "banner": "Draft ready for editing.",
+        "name": "Updated Workflow",
+        "steps": [
+          {
+            "action": "send_email",
+            "delayHours": 24
+          }
+        ]
+      }
+    },
+    "marketing-media:listing-1791173061074": {
+      "workflowId": "marketing-media:listing-1791173061074",
+      "updatedAt": "2026-10-05T04:04:24.068Z",
+      "snapshot": {
+        "draft": {
+          "propertyAddress": "123 Main St",
+          "socialCaption": "[API_ERROR] Unexpected payload format from OpenAI",
+          "highlights": "Stunning exterior architecture, Newly upgraded kitchen, Premium location",
+          "sourceFolderPath": "",
+          "lastSync": "2026-10-05T04:04:24.067Z"
+        },
+        "activity": [
+          {
+            "title": "Pipeline Triggered",
+            "detail": "Pipeline triggered by admin@excellegacy.com for event: manual",
+            "timestamp": "2026-10-05T04:04:24.067Z"
+          }
+        ],
+        "lastSavedAt": "2026-10-05T04:04:24.067Z",
+        "banner": "Marketing assets successfully generated. (No local directory found, using defaults)"
+      }
+    }
+  }
+}

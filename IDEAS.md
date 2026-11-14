@@ -71,4 +71,9 @@ This document contains ideas for improvements, refactoring, new features, and pi
 - **Live County Auction Co-Pilot (`foreclosureworkflow` + `calculators`)**: Stream county sheriff-sale dockets directly into the Investor DSCR/Cap-Rate calculator to compute maximum bid ceilings (`70% ARV - Rehab - Redemption Carry`) in real time on auction morning.
 - **Realtime Voice-to-Offer Pipeline (`leadcaller` + `offer-draft`)**: Let an agent dictate offer price, earnest money, inspection days, and closing date over a 30-second voice memo right after a showing; AI parses the transcript into a pre-filled `Offer Draft` session queued in `Approvals` with a ready-to-send `/sign/[token]` link.
 
+## 7. Universal CRM B2B SaaS Expansion Ideas (v0.65.0 — United Beats LLC)
+- **Self-Serve Stripe Multi-Tenant Provisioning Webhook**: Wire the `/universal` configurator directly to Stripe Checkout (`platform base + selected addOnsForSector` recurring subscription items) so payment completion auto-creates the tenant `Workspace`, applies the JSON pack manifest (`sectorId`, `language`, `primaryColor`, `accentColor`, `enabledAddOnIds`), and emails a one-time Owner invite link in under 60 seconds.
+- **Sector-Aware AI Co-Pilot System Prompting**: Inject `resolveUniversalTenant(workspaceId)` directly into `/api/chat` and HyperNexus voice prompts so the omnipresent AI co-pilot automatically speaks in the active workspace's sector nouns (`Patient`/`Case` in Healthcare, `Client`/`Matter` in Legal, `Homeowner`/`Service Call` in Home Services), active locale, and sector compliance guardrails (e.g., HIPAA PHI warning, IOLTA separation, Fair Housing).
+- **One-Click Sector SmartPlan Seeding**: Extend `scripts/load-default-campaigns.mjs` so switching or provisioning a sector pack offers to seed 4 sector-native multi-step drip campaigns from `sector.templates` (e.g., Healthcare recall & intake reminders, Legal consultation & deadline trackers, Home Services seasonal tune-up recalls).
+
 

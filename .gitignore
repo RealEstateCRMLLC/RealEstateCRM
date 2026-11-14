@@ -24,8 +24,12 @@ build-standalone*.txt
 # Deploy artifacts (built tarballs — regenerate with deploy/package-*.py)
 deploy-*.tar.gz
 
+# Raw binary DB backup snapshots & sensitive local email credential overrides
+archive/backups/*.bak*
+data/email-settings.json
+
 # Database & state files are tracked (retention policy)
-# (dev.db, prisma/dev.db, metamcp.db, *.sqlite are intentionally not ignored)
+# (dev.db, prisma/dev.db, metamcp.db, *.sqlite, data/*.json are intentionally not ignored)
 
 # Build artifacts
 /dist

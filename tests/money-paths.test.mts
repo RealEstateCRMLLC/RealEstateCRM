@@ -83,7 +83,33 @@ async function admin() {
   return adminJar;
 }
 
+async function isServerReachable(baseUrl: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 1500);
+  try {
+    const res = await fetch(`${baseUrl}/api/auth/providers`, { signal: controller.signal });
+    return res.status > 0;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+test('Deal stages: canonical stage validator rejects arbitrary stage strings', async () => {
+  const { isDealStage, DEAL_STAGE_IDS } = await import('../src/lib/deal-stages.ts');
+  assert.ok(isDealStage('LEAD'), 'LEAD is a canonical stage (model default)');
+  assert.ok(isDealStage('CLOSED_LOST'), 'deals must be markable as lost');
+  assert.ok(!isDealStage('SOMETHING_ELSE'), 'arbitrary stages must be rejected');
+  assert.strictEqual(DEAL_STAGE_IDS.length, 7);
+});
+
 test('Money paths: auth, e-sign, team, branding, deals', async (t) => {
+  const reachable = await isServerReachable(BASE);
+  if (!reachable && process.env.REQUIRE_LIVE_SERVER !== '1') {
+    t.skip(`Server at ${BASE} is offline (local servers off per owner rule; set TEST_BASE_URL or REQUIRE_LIVE_SERVER=1 to run)`);
+    return;
+  }
 
   // ---------------------------------------------------------------- 1. AUTH
   await t.test('REGRESSION: wrong password on a real account returns no session', async () => {

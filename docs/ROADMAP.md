@@ -1,2 +1,3 @@
 
+- Delivered Universal CRM Phase 2 Tenant Provisioning (`workspace -> sector pack -> brand -> language`), full 16-language UI dictionary (incl. RTL Arabic), inline `/dashboard/settings?tab=sector-pack` + interactive `/universal` configurator & B2B pilot funnel, `SignInForm` autofill/headless submit resilience, and offline-server-aware test suite in 0.65.0.
 - Delivered shared buyer/seller drip defaults and calendar delay editing in 0.61.6. Future work includes full reply event handling and provider delivery analytics.

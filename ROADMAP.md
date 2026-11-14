@@ -1,3 +1,6 @@
+## v0.65.0 status (2026-11-14)
+Shipped **Universal CRM Phase 2 — Tenant Provisioning & 16-Language White-Label Configurator** (`workspace -> sector pack -> brand -> language + 3-generation UX + United Beats add-ons`): `src/lib/universal/tenant.ts`, `GET/PUT /api/universal/tenant`, inline `/dashboard/settings?tab=sector-pack`, interactive `/universal` configurator with live RTL preview + B2B pilot request funnel (`POST /api/leads/external`), full 16-locale UI dictionary in `src/lib/universal/platform.ts`, `SignInForm` autofill/headless `FormData` resilience fix, and offline-server-aware test suite (`39 pass / 0 fail`, plus automated 36/36 `CommandCenter` route coverage assertion). Next software/business frontier: first non-real-estate pilot tenant, Hank pilot proposal wording approval + signature, and Tier-1 owner keys (Stripe, RESO MLS token + Member ID, Twilio number, Resend).
+
 ## v0.64.14 status (2026-11-14)
 Rebuild verified green. Frontier unchanged: owner-gated keys/signature only.
 

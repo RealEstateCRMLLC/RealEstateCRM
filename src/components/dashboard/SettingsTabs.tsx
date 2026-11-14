@@ -21,6 +21,7 @@ import { VoiceSettingsClient } from '@/components/VoiceSettingsClient';
 import AIModelsSettingsClient from '@/components/AIModelsSettingsClient';
 import AILearningMemory from '@/components/AILearningMemory';
 import MCPSettingsClient from '@/components/MCPSettingsClient';
+import UniversalProvisioner from '@/components/universal/UniversalProvisioner';
 import type { EmailConfig } from '@/lib/email-config';
 import type { VoiceConfig } from '@/lib/voice-config';
 import {
@@ -90,6 +91,16 @@ const TABS: SettingsTab[] = [
     href: '/dashboard/settings/branding',
     standalone: true,
     icon: '🎨',
+  },
+  {
+    id: 'sector-pack',
+    label: 'Universal Sector & Language',
+    description: 'Provision industry sector pack (8 sectors), primary UI locale (16 languages incl. RTL), generation UX, and United Beats add-ons.',
+    tooltip:
+      'Universal CRM tenant provisioning: switch vocabulary, pipeline stages, compliance guardrails, and primary language across Real Estate, Healthcare, Legal, Finance, Construction, Retail, Hospitality, and Home Services.',
+    href: '/universal',
+    standalone: true,
+    icon: '🌍',
   },
   {
     id: 'team',
@@ -255,7 +266,7 @@ export default function SettingsTabs({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight">Unified Settings Console</h1>
-              <InfoBadge text="All 10 workspace, AI, communication, team, and integration panels live directly inline on this page. Select any tab below to edit without leaving the console." />
+              <InfoBadge text="All 11 workspace, Universal CRM sector/locale, AI, communication, team, and integration panels live directly inline on this page. Select any tab below to edit without leaving the console." />
             </div>
             <p className="text-muted-foreground text-sm mt-1">
               Every configuration panel in one tabbed surface — no extra page hops required.
@@ -337,6 +348,8 @@ export default function SettingsTabs({
           {current.id === 'email' && <EmailSettingsClient initialConfig={resolvedEmailConfig} />}
 
           {current.id === 'branding' && <BrandingSettingsPage />}
+
+          {current.id === 'sector-pack' && <UniversalProvisioner mode="workspace" />}
 
           {current.id === 'team' && <TeamSettingsPage />}
 
