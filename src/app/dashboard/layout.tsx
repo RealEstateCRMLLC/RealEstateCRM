@@ -20,6 +20,9 @@ import { startSyncScheduler } from '@/lib/sync-scheduler';
 import LeadAlertListener from '@/components/LeadAlertListener';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import SidebarNav from '@/components/dashboard/SidebarNav';
+import { getWorkspaceBranding, DEFAULT_BRANDING } from '@/lib/branding';
+import { resolveUniversalTenant } from '@/lib/universal/tenant';
+import { getStoredTenantRecord } from '@/lib/universal/tenant-store';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   let session = null;
@@ -52,34 +55,61 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // — individual pages handle their own access denials via error.tsx boundaries.
   let workspaces: { id: string; name: string; slug: string }[] = [];
   let access: Awaited<ReturnType<typeof requireWorkspaceAccess>> | null = null;
+  let resolvedTenant: ReturnType<typeof resolveUniversalTenant> | null = null;
   try {
     access = await requireWorkspaceAccess(session);
-    workspaces = await prisma.workspace.findMany({
-      where: {
-        members: {
-          some: { userId: access.userId },
+    const [memberWorkspaces, branding, tenantRecord] = await Promise.all([
+      prisma.workspace.findMany({
+        where: {
+          members: {
+            some: { userId: access.userId },
+          },
         },
-      },
-    });
+      }),
+      getWorkspaceBranding(access.workspaceId).catch(() => DEFAULT_BRANDING),
+      getStoredTenantRecord(access.workspaceId),
+    ]);
+    workspaces = memberWorkspaces;
+    resolvedTenant = resolveUniversalTenant(tenantRecord, branding);
   } catch (e) {
     console.error('Workspace access check failed in dashboard layout:', e);
   }
 
+  const brandName = resolvedTenant?.brand.name || 'Excel Legacy';
+  const brandInitial = brandName.trim().charAt(0).toUpperCase() || 'E';
+  const brandAccent = resolvedTenant?.brand.accentColor || undefined;
+  const sectorTooltip = resolvedTenant
+    ? `Active Universal CRM Pack: ${resolvedTenant.sector.name} (${resolvedTenant.vocabulary.customer} / ${resolvedTenant.vocabulary.workUnit} / ${resolvedTenant.vocabulary.offering}) • Locale: ${resolvedTenant.language.label} (${resolvedTenant.language.code.toUpperCase()}) • Click to configure sector, branding, or language`
+    : 'Configure Universal CRM sector pack, vocabulary, and language';
+
   return (
-    <div className="flex h-screen bg-background">
+    <div
+      className="flex h-screen bg-background"
+      dir={resolvedTenant?.language.rtl ? 'rtl' : undefined}
+    >
       {/* Sidebar */}
       <aside aria-label="Main sidebar" className="w-64 border-r border-border bg-muted/30 flex flex-col hidden md:flex">
         <div className="h-16 flex items-center px-6 border-b border-border">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-sm bg-secondary flex items-center justify-center font-bold text-secondary-foreground text-xs">
-              E
+          <div className="flex items-center gap-2 min-w-0">
+            <div
+              className="w-6 h-6 rounded-sm bg-secondary flex items-center justify-center font-bold text-secondary-foreground text-xs shrink-0"
+              style={brandAccent ? { backgroundColor: brandAccent, color: '#0a0a0a' } : undefined}
+            >
+              {brandInitial}
             </div>
-            <span className="font-semibold text-primary dark:text-foreground">Excel Legacy</span>
+            <span className="font-semibold text-primary dark:text-foreground truncate" title={brandName}>
+              {brandName}
+            </span>
           </div>
         </div>
 
         <SidebarNav />
-        <div className="p-4 border-t border-border bg-muted/10">
+        <div className="p-4 border-t border-border bg-muted/10 space-y-1">
+          {resolvedTenant && (
+            <div className="text-[10px] text-muted-foreground text-center truncate" title={sectorTooltip}>
+              {resolvedTenant.sector.name} • {resolvedTenant.language.native}
+            </div>
+          )}
           <div className="text-[10px] text-muted-foreground uppercase tracking-widest text-center font-bold">
             Version {getProjectVersion()}
           </div>
@@ -90,15 +120,30 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="h-16 border-b border-border bg-background flex items-center justify-between px-6 sticky top-0 z-10">
           <div className="md:hidden flex items-center gap-2">
-            <div className="w-6 h-6 rounded-sm bg-secondary flex items-center justify-center font-bold text-secondary-foreground text-xs">
-              E
+            <div
+              className="w-6 h-6 rounded-sm bg-secondary flex items-center justify-center font-bold text-secondary-foreground text-xs"
+              style={brandAccent ? { backgroundColor: brandAccent, color: '#0a0a0a' } : undefined}
+            >
+              {brandInitial}
             </div>
           </div>
           <div className="flex-1 flex items-center justify-between px-4">
             <div className="flex-1 flex justify-center">
               <CommandPalette />
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {resolvedTenant && (
+                <Link
+                  href="/dashboard/settings?tab=sector-pack"
+                  title={sectorTooltip}
+                  className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-full border border-border bg-muted/40 hover:border-secondary/50 text-foreground transition-colors"
+                >
+                  <span>🌍</span>
+                  <span>{resolvedTenant.sector.name}</span>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="uppercase text-secondary">{resolvedTenant.language.code}</span>
+                </Link>
+              )}
               <ThemeToggle />
               <NotificationDropdown />
               <WorkspaceSwitcher workspaces={workspaces} activeSlug={access?.workspaceSlug || ''} />

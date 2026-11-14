@@ -1,3 +1,4 @@
 
+- Delivered Dual-Mode Stripe / Mercury Billing Engine (`GET/POST /api/billing/checkout`, `POST /api/billing/webhook`, TSF + Universal CRM subscription/add-on quoting & `INV-UB-*` invoices), live `DashboardLayout` brand/RTL/sector shell adaptation, and Hetzner `:3210` MyPlus scheduler loopback fix in 0.66.0.
 - Delivered Universal CRM Phase 2 Tenant Provisioning (`workspace -> sector pack -> brand -> language`), full 16-language UI dictionary (incl. RTL Arabic), inline `/dashboard/settings?tab=sector-pack` + interactive `/universal` configurator & B2B pilot funnel, `SignInForm` autofill/headless submit resilience, and offline-server-aware test suite in 0.65.0.
 - Delivered shared buyer/seller drip defaults and calendar delay editing in 0.61.6. Future work includes full reply event handling and provider delivery analytics.

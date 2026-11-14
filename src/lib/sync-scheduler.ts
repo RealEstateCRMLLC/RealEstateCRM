@@ -1,70 +1,77 @@
-// ─── Local MyPlus Sync Scheduler ───────────────────────────────────────────
+// ─── MyPlus Leads Background Sync Scheduler ─────────────────────────────────
 //
-// Runs inside the Next.js dev server. Triggers MyPlus Leads sync:
-// - Every 15 minutes between 4:00-7:00 AM (high-frequency morning drop window)
-// - Every 1 hour during the rest of the day to fetch straggler leads periodically
-//
-// Imported in: src/app/dashboard/layout.tsx (runs server-side)
-// ───────────────────────────────────────────────────────────────────────────
+// Runs inside the Next.js Node runtime (`src/app/dashboard/layout.tsx`).
+// Triggers `/api/cron/myplusleads` every 15 minutes over the local loopback
+// port (`process.env.PORT || '3000'`) so production deployments on non-3000
+// ports (e.g. Hetzner `:3210`) never fail with `ECONNREFUSED localhost:3000`.
+// ─────────────────────────────────────────────────────────────────────────────
 
-const SYNC_WINDOW_START = 4;  // 4:00 AM
-const SYNC_WINDOW_END = 7;    // 7:00 AM
 const CHECK_INTERVAL_MS = 15 * 60 * 1000; // every 15 minutes
 
-let schedulerStarted = false;
-let lastSyncTimeMs = 0;
+const schedulerState = globalThis as typeof globalThis & {
+  myPlusSchedulerTimer?: ReturnType<typeof setInterval>;
+  myPlusLastSyncTimeMs?: number;
+};
 
 /**
- * Start the local sync scheduler.
- * Must be called from a server context (layout.tsx, not client component).
+ * Resolve the internal loopback base URL for server-to-self cron calls.
+ * Prioritizes `INTERNAL_APP_URL`, then `127.0.0.1:${PORT || 3000}` so the
+ * request stays inside the host without traversing public DNS/TLS or hitting
+ * a dead `:3000` port when production runs on `:3210`.
  */
-export function startSyncScheduler() {
-  if (schedulerStarted) return;
-  schedulerStarted = true;
+export function resolveInternalAppUrl(env: NodeJS.ProcessEnv = process.env): string {
+  if (env.INTERNAL_APP_URL && env.INTERNAL_APP_URL.trim()) {
+    return env.INTERNAL_APP_URL.trim().replace(/\/+$/, '');
+  }
+  const port = env.PORT && /^\d+$/.test(env.PORT.trim()) ? env.PORT.trim() : '3000';
+  return `http://127.0.0.1:${port}`;
+}
 
-  // console.log('[MyPlus Scheduler] Started — morning drops synced (4-7 AM) and stragglers synced hourly');
+export function startSyncScheduler() {
+  if (schedulerState.myPlusSchedulerTimer) return;
 
   const tick = async () => {
     try {
-      const now = new Date();
-      const hour = now.getHours();
-      const nowMs = now.getTime();
-
-      const timeSinceLastSync = nowMs - lastSyncTimeMs;
-      const fifteenMinsMs = 15 * 60 * 1000;
-
-      // Run sync every 15 minutes all day long to deliver leads as soon as they are posted
-      if (timeSinceLastSync >= fifteenMinsMs) {
-        // console.log(`[MyPlus Scheduler] Triggering sync (lastSync: ${lastSyncTimeMs > 0 ? new Date(lastSyncTimeMs).toLocaleTimeString() : 'never'})...`);
-
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-        const cronSecret = process.env.CRON_SECRET;
-
-        const headers: Record<string, string> = {};
-        if (cronSecret) {
-          headers['Authorization'] = `Bearer ${cronSecret}`;
-        }
-
-        const res = await fetch(`${baseUrl}/api/cron/myplusleads`, {
-          headers,
-          signal: AbortSignal.timeout(120_000),
-        });
-
-        const data = await res.json();
-        // console.log(`[MyPlus Scheduler] Sync result: ${data.message || JSON.stringify(data)}`);
-        lastSyncTimeMs = nowMs;
+      const nowMs = Date.now();
+      const lastSync = schedulerState.myPlusLastSyncTimeMs ?? 0;
+      if (nowMs - lastSync < CHECK_INTERVAL_MS) {
+        return;
       }
-    } catch (err: any) {
-      // Silently ignore errors (server might not be ready, etc.)
-      if (err.name !== 'AbortError') {
-        console.error('[MyPlus Scheduler] Sync attempt failed:', err.message);
+
+      const baseUrl = resolveInternalAppUrl();
+      const cronSecret = process.env.CRON_SECRET;
+
+      const headers: Record<string, string> = {};
+      if (cronSecret) {
+        headers['Authorization'] = `Bearer ${cronSecret}`;
+      }
+
+      const res = await fetch(`${baseUrl}/api/cron/myplusleads`, {
+        headers,
+        signal: AbortSignal.timeout(60_000),
+      });
+
+      if (res.ok) {
+        await res.json().catch(() => null);
+        schedulerState.myPlusLastSyncTimeMs = nowMs;
+      }
+    } catch (err: unknown) {
+      const name = err instanceof Error ? err.name : '';
+      const message = err instanceof Error ? err.message : String(err);
+      if (name !== 'AbortError' && name !== 'TimeoutError') {
+        console.error('[MyPlus Scheduler] Sync attempt failed:', message);
       }
     }
   };
 
-  // Run immediately on start (in case server starts during sync window)
-  tick();
+  // Defer initial tick slightly so server socket is bound before self-probe
+  const warmup = setTimeout(() => {
+    void tick();
+  }, 5_000);
+  warmup.unref();
 
-  // Then check every 15 minutes
-  setInterval(tick, CHECK_INTERVAL_MS);
+  schedulerState.myPlusSchedulerTimer = setInterval(() => {
+    void tick();
+  }, CHECK_INTERVAL_MS);
+  schedulerState.myPlusSchedulerTimer.unref();
 }

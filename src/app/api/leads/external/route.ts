@@ -25,10 +25,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'No workspace found.' }, { status: 500 });
     }
 
-    // Find the assigned agent by email
-    const agent = await prisma.user.findFirst({
-      where: { email: assignedAgentEmail },
-    });
+    // Find the assigned agent by email only when explicitly provided
+    const agent =
+      typeof assignedAgentEmail === 'string' && assignedAgentEmail.trim()
+        ? await prisma.user.findFirst({
+            where: { email: assignedAgentEmail.trim() },
+          })
+        : null;
 
     const nameParts = name.trim().split(' ');
     const firstName = nameParts[0];
