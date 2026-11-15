@@ -127,8 +127,8 @@ export default function Home() {
             <h3 className="mt-1 text-2xl font-bold">Personal Property Trust documents, course &amp; done-with-you assembly</h3>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               Free branded Declaration of Trust, Appointment of Trustee, and Affidavit &amp; Certificate of Trust;
-              a complete 8-module funding course for $497; or let the Excel Legacy Realty Team assemble and fund
-              your trust with you for $997 flat — attorney review built in.
+              a complete 8-module funding course; or done-with-you trust assembly and funding coordination with the
+              Excel Legacy Realty Team — custom flat-fee consultation with attorney review built in.
             </p>
           </div>
           <Link href="/trust-services" className="mt-4 shrink-0 bg-secondary px-5 py-3 text-sm font-bold text-black md:mt-0">Explore Trust Services</Link>

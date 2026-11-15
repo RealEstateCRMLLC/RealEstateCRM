@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { resolveInternalAppUrl } from "../src/lib/sync-scheduler.ts";
 import {
   buildCustomBillingQuote,
@@ -15,6 +15,7 @@ import {
   markBillingOrderPaid,
   verifyStripeWebhookSignature,
 } from "../src/lib/billing/order-store.ts";
+import { escapeCsvCell, objectsToCsv, sanitizeCsvValue } from "../src/lib/csv-export.ts";
 
 test("sync-scheduler resolveInternalAppUrl honors PORT=3210 on Hetzner and INTERNAL_APP_URL", () => {
   assert.equal(resolveInternalAppUrl({ NODE_ENV: "production" }), "http://127.0.0.1:3000");
@@ -190,4 +191,51 @@ test("verifyStripeWebhookSignature validates authentic HMAC-SHA256 signatures an
     nowSec,
   );
   assert.equal(replay.valid, false);
+});
+
+test("csv-export serializes RFC-4180 rows, preserves phone/negative numbers, and neutralizes formula injection", () => {
+  assert.equal(sanitizeCsvValue("+15865550100"), "+15865550100");
+  assert.equal(sanitizeCsvValue(-500.25), "-500.25");
+  assert.equal(sanitizeCsvValue("=CMD()"), "'=CMD()");
+  assert.equal(sanitizeCsvValue("+HYPERLINK(\"http://evil\")"), "'+HYPERLINK(\"http://evil\")");
+  assert.equal(escapeCsvCell('Macomb, "East"'), '"Macomb, ""East"""');
+
+  const emptyWithHeaders = objectsToCsv([], ["id", "county", "mortgagor_name"]);
+  assert.equal(emptyWithHeaders, "id,county,mortgagor_name\r\n");
+
+  const populated = objectsToCsv(
+    [
+      {
+        id: "fc-1",
+        county: "Macomb",
+        mortgagor_name: 'Doe, "Jane"',
+        phone: "+15865550100",
+      },
+    ],
+    ["id", "county", "mortgagor_name", "phone"],
+  );
+  assert.equal(
+    populated,
+    'id,county,mortgagor_name,phone\r\nfc-1,Macomb,"Doe, ""Jane""",+15865550100\r\n',
+  );
+});
+
+test("public funnel pages contain zero unapproved $199, $497, $997, or $1,497 SKU prices", async () => {
+  const files = [
+    "src/app/page.tsx",
+    "src/app/trust-services/page.tsx",
+    "src/app/trust-course/page.tsx",
+    "src/app/universal/page.tsx",
+    "src/components/trust/TrustLeadForm.tsx",
+    "src/components/universal/UniversalProvisioner.tsx",
+  ];
+  const forbidden = /\$199|\$497|\$997|\$1,497|"497"|"997"|"1497"|INV-UB-/;
+  for (const rel of files) {
+    const content = await readFile(path.join(process.cwd(), rel), "utf8");
+    assert.equal(
+      forbidden.test(content),
+      false,
+      `Expected ${rel} to contain zero unapproved SKU prices or INV-UB- strings`,
+    );
+  }
 });

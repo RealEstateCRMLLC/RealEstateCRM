@@ -1,5 +1,9 @@
 # TODO.md
 
+### v0.66.2 completed & active items (2026-11-15)
+- [x] **Full Public & Dashboard SKU Sweep (`v0.66.2`):** Removed all remaining static `$497 / $997 / $1,497` (`497`, `997`, `1497`) price tags across `/`, `/trust-services` (incl. JSON-LD `Offer` schema), `/trust-course`, `CommandCenter.tsx`, `SidebarNav.tsx`, `dashboard/marketing/page.tsx`, and `dashboard/help-center/page.tsx`; enforced via automated unit + live-HTML checks (`tests/billing.test.mts`, `deploy/verify-live-prod.mjs`).
+- [x] **Hank Pilot Walkthrough & CSV Acceptance Polish:** Added explicit **MLS Office ID / Organization ID (OUID)** + **MLS Member ID** + encrypted **Broker / Server RESO Token** labels in `MlsConnectionForm.tsx`; built `src/lib/csv-export.ts` + workspace-scoped `GET /api/export?entity=foreclosures|deals|leads|contacts`; wired one-click **Export CSV** buttons on `/dashboard/deals`, `/dashboard/workflows`, and `WorkflowStudio`; and upgraded `WorkflowSessionsPanel.tsx` to search across all saved foreclosure/workflow sessions (`46 pass / 0 fail`).
+
 ### v0.66.1 completed & active items (2026-11-15)
 - [x] **Production Invoice/Deal Audit:** Verified on Hetzner (`prisma/dev.db` + `data/`) that `0` `INV-UB-*` orders, `0` checkout leads, and `0` unapproved `PROPOSAL` deals were created during `v0.66.0`.
 - [x] **Disarm Self-Serve Checkout & Unapproved Pricing (`v0.66.1`):** Removed unapproved `$199/mo` and `$497/$997/$1,497` checkout SKUs from `src/lib/billing/checkout.ts`, gated `/api/billing/checkout` behind explicit `BILLING_CHECKOUT_ENABLED=true` (`armed: false`, `mode: 'lead_only'`, `POST` -> `403`), and replaced fixed SKU quoting with `buildCustomBillingQuote()` for explicit owner-approved pilot proposals only (Hank 60-day pilot: `$500` setup + `$500/mo`).

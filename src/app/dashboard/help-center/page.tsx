@@ -318,13 +318,13 @@ const VIDEOS: VideoTopic[] = [
     description: 'Capture high-intent homeowner and investor leads with the public Personal Property Trust Services (/trust-services) and Trust Funding 101 (/trust-course) funnels.',
     steps: [
       'Open Marketing Hub > Trust Services & Public Funnels (/dashboard/marketing?tab=funnels) and click Copy URL.',
-      'Share /trust-services for the Free 3-Document Branded Trust Kit, $997 Done-With-You Trust Assembly, or $1,497 TSF Master Bundle.',
-      'Share /trust-course for the free Trust Funding 101 mini-course and $497 1-on-1 guided package.',
+      'Share /trust-services for the Free 3-Document Branded Trust Kit, Done-With-You Trust Assembly, or TSF Master Bundle consultation.',
+      'Share /trust-course for the free Trust Funding 101 mini-course and 1-on-1 guided training inquiry.',
       'Work incoming signups directly in Leads — each submission arrives tagged with its exact Trust tier and source.'
     ],
     simulationLogs: [
-      '🏛️ [Funnel] Prospect visited /trust-services and requested the $997 Done-With-You Trust Assembly.',
-      '👤 [Lead Intake] Created CRM Lead with source "Trust Services — $997 Assembly" and routed to broker.',
+      '🏛️ [Funnel] Prospect visited /trust-services and requested Done-With-You Trust Assembly.',
+      '👤 [Lead Intake] Created CRM Lead with source "TSF Trust Assembly" and routed to broker.',
       '📄 [Kit] Dispatched branded Declaration, Appointment of Trustee, and Affidavit & Certificate packet.',
       '⚖️ [Compliance] Attached mandatory licensed-attorney review checklist before execution.'
     ]

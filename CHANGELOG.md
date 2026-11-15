@@ -1,3 +1,10 @@
+## v0.66.2 (2026-11-15)
+
+### Public SKU Sweep & Hank Pilot Demo Polish (MLS Office ID + Workspace CSV Exports)
+- **Full Public & Dashboard SKU Sweep:** Removed all remaining legacy `v0.63.0` static `$497 / $997 / $1,497` (`497`, `997`, `1497`) price tags and invoice promises across `/`, `/trust-services` (including JSON-LD `Offer` metadata), `/trust-course`, `CommandCenter.tsx`, `SidebarNav.tsx`, `dashboard/marketing/page.tsx`, and `dashboard/help-center/page.tsx`, replacing them with consultation/proposal inquiry copy and adding automated source + live-production regression assertions (`tests/billing.test.mts`, `deploy/verify-live-prod.mjs`).
+- **Broker MLS Office ID & Encrypted Token Polish (`MlsConnectionForm.tsx`):** Updated `/dashboard/settings?tab=integrations` with explicit **MLS Member ID (Broker / List Agent Key)**, **MLS Office ID / Organization ID (OUID)**, and **Broker / Server RESO Token (encrypted at rest)** labels and saved-connection badges (`Office ID`, `token encrypted`) for Hank's live brokerage walkthrough.
+- **Workspace RFC-4180 CSV Exports & Searchable Foreclosure Sessions (`src/lib/csv-export.ts`, `src/app/api/export/route.ts`, `WorkflowSessionsPanel.tsx`, `workflow-studio.tsx`, `deals/page.tsx`):** Added formula-injection-safe RFC-4180 CSV serializer (`objectsToCsv`), workspace-scoped `GET /api/export?entity=foreclosures|deals|leads|contacts`, one-click **Export CSV** buttons on Deals Pipeline, Workflows Hub, and inside `WorkflowStudio`, and upgraded `WorkflowSessionsPanel` on `/dashboard/workflows` to surface all saved `DRAFT`/`IN_PROGRESS`/`COMPLETED` sessions with instant search across mortgagor/owner, address, county, and parcel ID (`46 pass / 0 fail`).
+
 ## v0.66.1 (2026-11-15)
 
 ### Pricing & Billing Governance Patch — Disarm Self-Serve Checkout & Restore Lead-Only Forms

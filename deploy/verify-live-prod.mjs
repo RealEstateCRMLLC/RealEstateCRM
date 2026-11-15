@@ -1,14 +1,24 @@
 /**
- * Post-deploy live production probe for https://excellegacyrealtygroup.site (v0.66.1+)
+ * Post-deploy live production probe for https://excellegacyrealtygroup.site (v0.66.2+)
  * Verifies:
- *   1. Core routes: /, /universal, /auth/signin, /trust-services
+ *   1. Core routes (/, /universal, /trust-services, /trust-course, /auth/signin) return 200
+ *      AND contain zero unapproved $199, $497, $997, $1,497, or INV-UB- SKU strings
  *   2. Universal CRM API: /api/universal/tenant (8 sectors, 16 languages, 6 add-ons)
  *   3. Disarmed Billing Gate: GET /api/billing/checkout -> armed=false, mode="lead_only"; POST -> 403
- *   4. Auth & DB integrity: /api/auth/session, /api/listings (EXL-1001 preserved), /api/system/health
- *   5. Public submodule mounts: /leadg/login, /foreclosure/login, /aicrm, /leadcaller, /prototype/api/health
+ *   4. Workspace CSV Export Guard: GET /api/export?entity=foreclosures -> 401 when unauthenticated
+ *   5. Auth & DB integrity: /api/auth/session, /api/listings (EXL-1001 preserved), /api/system/health
+ *   6. Public submodule mounts: /leadg/login, /foreclosure/login, /aicrm, /leadcaller, /prototype/api/health
  */
 
 const BASE = process.env.PROD_BASE_URL || "https://excellegacyrealtygroup.site";
+const FORBIDDEN_SKU_RE = /\$199|\$497|\$997|\$1,497|INV-UB-/;
+
+function assertNoUnapprovedSkus(route, html) {
+  const m = html.match(FORBIDDEN_SKU_RE);
+  if (m) {
+    throw new Error(`${route} still contains forbidden unapproved SKU/invoice string: "${m[0]}"`);
+  }
+}
 
 async function check(path, validate, init = { redirect: "manual" }) {
   const url = `${BASE}${path}`;
@@ -24,7 +34,8 @@ async function check(path, validate, init = { redirect: "manual" }) {
 async function main() {
   await check("/", (res, html) => {
     if (res.status !== 200) throw new Error(`Expected 200 on /, got ${res.status}`);
-    return `HTML ${html.length} chars`;
+    assertNoUnapprovedSkus("/", html);
+    return `HTML ${html.length} chars (zero unapproved SKUs)`;
   });
 
   await check("/universal", (res, html) => {
@@ -32,10 +43,20 @@ async function main() {
     const hasConfigurator =
       html.includes("Interactive Tenant Provisioner") || html.includes("Universal CRM");
     if (!hasConfigurator) throw new Error("/universal missing configurator markup");
-    if (html.includes("INV-UB-") || html.includes("$199/mo")) {
-      throw new Error("/universal still contains unapproved $199/mo or INV-UB- text!");
-    }
-    return `HTML ${html.length} chars (lead-only configurator verified)`;
+    assertNoUnapprovedSkus("/universal", html);
+    return `HTML ${html.length} chars (lead-only configurator, zero unapproved SKUs)`;
+  });
+
+  await check("/trust-services", (res, html) => {
+    if (res.status !== 200) throw new Error(`Expected 200 on /trust-services, got ${res.status}`);
+    assertNoUnapprovedSkus("/trust-services", html);
+    return `HTML ${html.length} chars (zero unapproved SKUs)`;
+  });
+
+  await check("/trust-course", (res, html) => {
+    if (res.status !== 200) throw new Error(`Expected 200 on /trust-course, got ${res.status}`);
+    assertNoUnapprovedSkus("/trust-course", html);
+    return `HTML ${html.length} chars (zero unapproved SKUs)`;
   });
 
   await check("/api/universal/tenant", (res, body) => {
@@ -83,6 +104,13 @@ async function main() {
     },
   );
 
+  await check("/api/export?entity=foreclosures", (res) => {
+    if (res.status !== 401) {
+      throw new Error(`Expected 401 on unauthenticated GET /api/export?entity=foreclosures, got ${res.status}`);
+    }
+    return `auth guard active (401)`;
+  });
+
   await check("/auth/signin", (res, html) => `status=${res.status}, len=${html.length}`);
   await check("/api/auth/session", (res, body) => `status=${res.status}, body=${body.slice(0, 60)}`);
 
@@ -93,14 +121,6 @@ async function main() {
     const parsed = JSON.parse(body);
     const count = Array.isArray(parsed) ? parsed.length : parsed.listings?.length ?? "obj";
     return `listings=${count}, EXL-1001=preserved`;
-  });
-
-  await check("/trust-services", (res, html) => {
-    if (res.status !== 200) throw new Error(`Expected 200 on /trust-services, got ${res.status}`);
-    if (html.includes("INV-UB-")) {
-      throw new Error("/trust-services still contains INV-UB- invoice text!");
-    }
-    return `HTML ${html.length} chars`;
   });
 
   await check("/api/system/health", (res, body) => {
@@ -117,7 +137,7 @@ async function main() {
     await check(mount, (res) => `status=${res.status}`);
   }
 
-  console.log("ALL LIVE PRODUCTION CHECKS PASSED (v0.66.1)!");
+  console.log("ALL LIVE PRODUCTION CHECKS PASSED (v0.66.2)!");
 }
 
 main().catch((err) => {

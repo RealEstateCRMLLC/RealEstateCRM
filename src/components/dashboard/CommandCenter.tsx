@@ -125,13 +125,13 @@ const SECTIONS: Section[] = [
         statKey: 'pipeline',
       },
       {
-        label: 'TSF Master Bundle ($997 / $1,497)',
+        label: 'TSF Master Bundle',
         description: 'Flagship Personal Property Trust kit, 8-module course, and Done-With-You trust assembly funnel.',
         href: '/trust-services',
         external: true,
         icon: '🏛️',
         tooltip:
-          'High-ticket public conversion funnel at /trust-services ($0 Free Branded 3-Doc Kit, $997 Done-With-You Assembly, $1,497 Master Bundle). Every signup lands directly in Leads with Trust source tags.',
+          'Public conversion funnel at /trust-services (Free Branded 3-Doc Kit, 8-Module Course, and Done-With-You Trust Assembly inquiry). Every signup lands directly in Leads with Trust source tags.',
         priority: 3,
         badge: 'FLAGSHIP',
       },
@@ -200,8 +200,8 @@ const SECTIONS: Section[] = [
         priority: 1,
       },
       {
-        label: 'Trust Funding 101 Funnel ($0 / $497)',
-        description: 'Educational mini-course + $497 1-on-1 trust funding package that feeds inbound leads.',
+        label: 'Trust Funding 101 Funnel',
+        description: 'Educational mini-course + 1-on-1 guided trust funding inquiry funnel that feeds inbound leads.',
         href: '/trust-course',
         external: true,
         icon: '🎓',

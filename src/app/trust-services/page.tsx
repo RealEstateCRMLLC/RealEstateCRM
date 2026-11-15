@@ -6,7 +6,7 @@ import LeadMagnetForm from "@/components/trust/LeadMagnetForm";
 export const metadata: Metadata = {
   title: "Personal Property Trust Services, Documents & Complete Course | Excel Legacy Realty Group",
   description:
-    "Excel Legacy Realty Group Trust Services: free branded Personal Property Trust documents (Declaration of Trust, Appointment of Trustee, Affidavit & Certificate of Trust), a complete trust funding course, and a $997 done-with-you trust assembly service by licensed Michigan realtors and brokers. Attorney review included in every path.",
+    "Excel Legacy Realty Group Trust Services: free branded Personal Property Trust documents (Declaration of Trust, Appointment of Trustee, Affidavit & Certificate of Trust), a complete trust funding course, and done-with-you trust assembly by licensed Michigan realtors and brokers. Attorney review included in every path.",
   keywords: [
     "personal property trust", "declaration of trust template", "certificate of trust",
     "appointment of trustee", "trust funding course", "trust services Michigan",
@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Trust Services | Excel Legacy Realty Group",
-    description: "Branded trust documents, a complete course, and done-with-you trust assembly by the Excel Legacy Realty Team — from $0 to $997.",
+    description:
+      "Branded trust documents, a complete funding course, and done-with-you trust assembly by the Excel Legacy Realty Team.",
     type: "website",
   },
   alternates: { canonical: "https://excellegacyrealtygroup.site/trust-services" },
@@ -54,10 +55,10 @@ const MODULES = [
 
 const FAQS = [
   { q: "Are Excel Legacy realtors practicing law?", a: "No. Our licensed realtors and brokers assemble your documents from the facts you provide and teach you the mechanics, using professional real-estate insight on your property, LLC, and transaction history. Every path ends with an attorney-review checklist and referral — a licensed attorney in your state approves your documents before you sign." },
-  { q: "Why $997 when attorneys charge $1,500–$3,500?", a: "Attorneys draft bespoke estate plans and bill for legal judgment. Our assembly service does the document preparation, asset scheduling, and funding coordination at a moderate flat price, then routes you to an attorney for review. Online kits run $399–$649 but leave assembly and funding entirely to you — that gap is exactly what the $997 service closes." },
+  { q: "Why done-with-you assembly instead of a blank online kit?", a: "Attorneys draft bespoke estate plans and bill for legal judgment, while generic online form kits leave asset scheduling and funding coordination entirely to you. Our assembly service handles the structured document preparation, Exhibit A asset scheduling, and funding roadmap with you, then routes your packet to a licensed attorney for review." },
   { q: "What does done-with-you assembly include?", a: "A fact-finding session with your Excel Legacy Realty Team member, completed Declaration of Trust, Appointment of Trustee, and Affidavit/Certificate drafts, your Exhibit A asset schedule, a personalized funding plan, notary-session coordination, and an attorney-review packet." },
-  { q: "Is the free document kit really the full documents?", a: "Yes — the complete newly revised Declaration, Appointment, and Affidavit templates, Excel Legacy branded, in PDF and editable DOCX. We give them away because an assembled, funded trust — not a downloaded form — is what protects a family, and that is the service we sell." },
-  { q: "Does this replace my estate attorney or CPA?", a: "Never. Trust taxation, creditor exposure, and state trust-code rules need licensed advice. Our course states this in lesson one and our service contract requires attorney review before execution." },
+  { q: "Is the free document kit really the full documents?", a: "Yes — the complete newly revised Declaration, Appointment, and Affidavit templates, Excel Legacy branded, in PDF and editable DOCX. We give them away because an assembled, funded trust — not a downloaded form — is what protects a family, and that is the guided service our team provides." },
+  { q: "Does this replace my estate attorney or CPA?", a: "Never. Trust taxation, creditor exposure, and state trust-code rules need licensed advice. Our course states this in lesson one and our service workflow requires attorney review before execution." },
 ];
 
 const jsonLd = {
@@ -69,9 +70,6 @@ const jsonLd = {
   description: metadata.description,
   offers: [
     { "@type": "Offer", name: "Branded Trust Document Kit", price: "0", priceCurrency: "USD" },
-    { "@type": "Offer", name: "Complete Trust Course", price: "497", priceCurrency: "USD" },
-    { "@type": "Offer", name: "Done-With-You Trust Assembly", price: "997", priceCurrency: "USD" },
-    { "@type": "Offer", name: "Concierge Trust & Funding", price: "1497", priceCurrency: "USD" },
   ],
 };
 
@@ -95,7 +93,7 @@ export default function TrustServicesPage() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#kit" className="bg-secondary px-5 py-3 text-sm font-bold text-black">Claim the free Starter Kit</a>
-            <a href="#bundle" className="border border-accent-foreground/40 px-5 py-3 text-sm font-semibold">Master Bundle — $1,497 / clients $997</a>
+            <a href="#bundle" className="border border-accent-foreground/40 px-5 py-3 text-sm font-semibold">Master Bundle &amp; Assembly — Request Consultation</a>
           </div>
           <p className="mt-5 text-xs text-accent-foreground/60">Knowledge • Wisdom • Integrity — educational services only, not legal advice. Attorney review is built into every path.</p>
         </div>
@@ -144,15 +142,15 @@ export default function TrustServicesPage() {
           </div>
           <div className="mt-6 flex flex-col gap-4 border-2 border-secondary p-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-2xl font-bold" id="bundle">TSF Master Bundle — $1,497 standalone</p>
-              <p className="text-sm text-muted-foreground">All 8 modules taught live by any Excel Legacy realtor, instructor guide + student workbook, funding checklist, document walkthroughs, session recording. Buying or selling with us? Your client price is $997 — ask your realtor.</p>
+              <p className="text-2xl font-bold" id="bundle">TSF Master Bundle — Taught Course &amp; Guided Walkthrough</p>
+              <p className="text-sm text-muted-foreground">All 8 modules taught live by any Excel Legacy realtor, instructor guide + student workbook, funding checklist, document walkthroughs, session recording. Buying or selling with us? Ask your Excel Legacy realtor about preferred client terms.</p>
             </div>
-            <div className="w-full max-w-md"><TrustLeadForm intent="course" cta="Enroll in the Master Bundle" /></div>
+            <div className="w-full max-w-md"><TrustLeadForm intent="course" cta="Request Master Bundle Details" /></div>
           </div>
         </section>
 
         <section id="assembly">
-          <h2 className="text-3xl font-bold">Done-with-you trust assembly — $997 flat</h2>
+          <h2 className="text-3xl font-bold">Done-with-you trust assembly</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             This is the service our clients asked for. Your Excel Legacy realtor or broker sits with you — in
             person or on video — and assembles the necessary components from your documents and your actual
@@ -175,25 +173,25 @@ export default function TrustServicesPage() {
           </div>
           <div className="mt-6 overflow-x-auto">
             <table className="w-full border border-border text-left text-sm">
-              <thead><tr className="bg-muted"><th className="p-3">Path</th><th className="p-3">Typical market price</th><th className="p-3">Excel Legacy</th></tr></thead>
+              <thead><tr className="bg-muted"><th className="p-3">Path</th><th className="p-3">What is included</th><th className="p-3">Excel Legacy Access</th></tr></thead>
               <tbody>
-                <tr className="border-t border-border"><td className="p-3">DIY forms / online kits</td><td className="p-3">$100–$649, assembly on you</td><td className="p-3 font-semibold">Free branded kit</td></tr>
-                <tr className="border-t border-border"><td className="p-3">Taught complete course (standalone)</td><td className="p-3">Attorney packages $1,500–$3,500; instructor-led certs ~$1,599</td><td className="p-3 font-semibold">TSF Master Bundle $1,497</td></tr>
-                <tr className="border-t-2 border-secondary bg-secondary/10"><td className="p-3 font-bold">Bundle as Excel Legacy client add-on (flagship)</td><td className="p-3">Same taught course + assembly, tied to your transaction</td><td className="p-3 font-bold">$997 client price</td></tr>
-                <tr className="border-t border-border"><td className="p-3">Concierge: bundle + funding coordination + annual review</td><td className="p-3">$2,700+ estate packages</td><td className="p-3 font-semibold">+$500 over bundle</td></tr>
+                <tr className="border-t border-border"><td className="p-3">Starter Document Kit</td><td className="p-3">Declaration, Appointment of Trustee &amp; Affidavit templates + workbook preview</td><td className="p-3 font-semibold">Free branded kit</td></tr>
+                <tr className="border-t border-border"><td className="p-3">Taught Complete Course</td><td className="p-3">All 8 modules live with an Excel Legacy realtor + student workbook &amp; recording</td><td className="p-3 font-semibold">By consultation</td></tr>
+                <tr className="border-t-2 border-secondary bg-secondary/10"><td className="p-3 font-bold">Done-With-You Trust Assembly (flagship)</td><td className="p-3">Fact-finding, completed drafts, Exhibit A asset schedule, attorney review packet &amp; notary coordination</td><td className="p-3 font-bold">Preferred client &amp; custom quote</td></tr>
+                <tr className="border-t border-border"><td className="p-3">Concierge Funding &amp; Annual Review</td><td className="p-3">Everything in Assembly plus deed/LLC/account funding coordination and annual review</td><td className="p-3 font-semibold">Custom concierge scope</td></tr>
               </tbody>
             </table>
           </div>
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <div className="border-2 border-secondary p-6">
-              <p className="text-2xl font-bold">$997 — Trust Assembly</p>
+              <p className="text-2xl font-bold">Done-With-You Trust Assembly</p>
               <p className="mt-1 text-sm text-muted-foreground">Three documents assembled, Exhibit A, funding plan, attorney packet, notary coordination.</p>
-              <div className="mt-4"><TrustLeadForm intent="assembly" cta="Start my $997 assembly" /></div>
+              <div className="mt-4"><TrustLeadForm intent="assembly" cta="Request Trust Assembly" /></div>
             </div>
             <div className="border border-border p-6">
-              <p className="text-2xl font-bold">$1,497 — Concierge Funding</p>
+              <p className="text-2xl font-bold">Concierge Funding &amp; Review</p>
               <p className="mt-1 text-sm text-muted-foreground">Everything in Assembly, plus deed/LLC/account funding coordination and your first annual review.</p>
-              <div className="mt-4"><TrustLeadForm intent="concierge" cta="Go concierge — $1,497" /></div>
+              <div className="mt-4"><TrustLeadForm intent="concierge" cta="Request Concierge Scope" /></div>
             </div>
           </div>
           <div className="mt-6 max-w-xl">
@@ -206,8 +204,8 @@ export default function TrustServicesPage() {
           <h2 className="text-2xl font-bold">Michigan trust services, built by the people who close your homes</h2>
           <div className="mt-3 max-w-3xl space-y-4 text-sm leading-6 text-muted-foreground">
             <p>Excel Legacy Realty Group closes real estate across Michigan every week, and we see the same failure at the closing table and beyond: a family paid for a trust, signed it, and never funded it. The house was never deeded, the LLC was never assigned, the bank accounts were never retitled — so the trust controlled nothing and probate happened anyway. Our Trust Services exist to close that gap for every client who walks through our door, whether you bought your home with us or not.</p>
-            <p>A personal property trust holds what a deed cannot: LLC and business membership interests, bank and brokerage accounts, vehicles, equipment, and intangible property. Our newly revised Declaration of Trust, Appointment of Trustee, and Affidavit &amp; Certificate of Trust cover trustee powers, beneficiary percentages, powers of direction, successor continuity, FinCEN CDD beneficial-ownership disclosures for banks, and third-party reliance protection. The free branded kit, the complete $497 course, and the $997 done-with-you assembly all teach and apply the same funding discipline: schedule it in Exhibit A, transfer it, verify it, and review it every year.</p>
-            <p>We are realtors and brokers, not attorneys, and we say so on every page and every document. That honesty is the model: our team assembles and funds with licensed real-estate insight at a moderate flat price, and a licensed attorney reviews before anything is signed. It is how a real estate business should sell trust services — as the natural next step after the closing, at a price that helps more Michigan families actually finish the job.</p>
+            <p>A personal property trust holds what a deed cannot: LLC and business membership interests, bank and brokerage accounts, vehicles, equipment, and intangible property. Our newly revised Declaration of Trust, Appointment of Trustee, and Affidavit &amp; Certificate of Trust cover trustee powers, beneficiary percentages, powers of direction, successor continuity, FinCEN CDD beneficial-ownership disclosures for banks, and third-party reliance protection. The free branded kit, the complete 8-module course, and done-with-you assembly all teach and apply the same funding discipline: schedule it in Exhibit A, transfer it, verify it, and review it every year.</p>
+            <p>We are realtors and brokers, not attorneys, and we say so on every page and every document. That honesty is the model: our team assembles and funds with licensed real-estate insight, and a licensed attorney reviews before anything is signed. It is how a real estate business should deliver trust services — as the natural next step after the closing, scoped transparently so more Michigan families actually finish the job.</p>
           </div>
         </section>
 
@@ -223,9 +221,9 @@ export default function TrustServicesPage() {
           </div>
           <p className="mt-6 text-xs leading-5 text-muted-foreground">
             Educational content and document-assembly services only — not legal, tax, or financial advice, and no
-            attorney-client relationship is created. Prices are flat service fees; attorney review, notary, and
-            recording fees are separate. Have a licensed attorney in your governing state review your completed
-            documents before you sign, notarize, or fund anything. Prefer self-study first?{" "}
+            attorney-client relationship is created. Attorney review, notary, and recording fees are separate. Have
+            a licensed attorney in your governing state review your completed documents before you sign, notarize, or
+            fund anything. Prefer self-study first?{" "}
             <Link href="/trust-course" className="font-semibold text-primary underline">Start with Trust Funding 101</Link>.
           </p>
         </section>
@@ -233,4 +231,3 @@ export default function TrustServicesPage() {
     </main>
   );
 }
-

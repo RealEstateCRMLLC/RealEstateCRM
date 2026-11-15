@@ -74,11 +74,12 @@ export default function MlsConnectionForm() {
   const input = 'w-full border rounded px-3 py-2 text-sm bg-background';
   return (
     <div className="bg-card rounded-lg border p-5 mt-6">
-      <h2 className="text-lg font-semibold text-foreground">Connect MLS (per agent)</h2>
+      <h2 className="text-lg font-semibold text-foreground">Connect Brokerage / Agent MLS Feed (RESO Web API)</h2>
       <p className="text-sm text-muted-foreground mt-1">
-        Use a RESO Web API server token or OAuth client issued by your MLS/vendor, or register with
-        Member ID only to receive listings from the brokerage feed. MLS browser passwords are never
-        asked for or stored. Secrets are encrypted and never displayed again.
+        Enter a MiRealSource or Realcomp RESO Web API broker/server token or OAuth client alongside
+        your MLS Member ID and Office ID, or register with Member ID only to receive listings from the
+        brokerage feed. Never email tokens — secrets entered here are AES-256-GCM encrypted at rest and
+        never displayed again.
       </p>
 
       {conns.length > 0 && (
@@ -88,7 +89,8 @@ export default function MlsConnectionForm() {
               <span className="font-medium">{c.mlsName}</span>
               <span className="text-muted-foreground">{c.authType}</span>
               {c.memberMlsId && <span className="text-muted-foreground">Member ID: {c.memberMlsId}</span>}
-              <span className="text-muted-foreground">{c.hasToken ? 'token saved' : 'no token'}</span>
+              {c.organizationId && <span className="text-muted-foreground">Office ID: {c.organizationId}</span>}
+              <span className="text-muted-foreground">{c.hasToken ? 'token encrypted' : 'no token'}</span>
               {c.lastSyncStatus && <span className="text-muted-foreground">last sync: {c.lastSyncStatus}</span>}
               <span className="flex gap-2 ml-auto">
                 <button type="button" disabled={busy} onClick={() => act('test', c.id)} className="px-3 py-1 border rounded hover:bg-muted/40">Test</button>
@@ -111,17 +113,17 @@ export default function MlsConnectionForm() {
         </label>
         <label className="text-sm">Credential type
           <select value={form.authType} onChange={e => setForm(f => ({ ...f, authType: e.target.value }))} className={input}>
-            <option value="SERVER_TOKEN">RESO server token</option>
+            <option value="SERVER_TOKEN">RESO broker / server token</option>
             <option value="OAUTH_CLIENT">OAuth client ID + secret</option>
             <option value="MEMBER_ID_ONLY">Member ID only (brokerage feed)</option>
           </select>
         </label>
         <label className="text-sm md:col-span-2">RESO Web API base URL
-          <input value={form.endpointUrl} onChange={e => setForm(f => ({ ...f, endpointUrl: e.target.value }))} placeholder="https://api.example-mls.com/reso/odata" className={input} />
+          <input value={form.endpointUrl} onChange={e => setForm(f => ({ ...f, endpointUrl: e.target.value }))} placeholder="https://api.mirealsource.com/reso/odata" className={input} />
         </label>
         {form.authType === 'SERVER_TOKEN' && (
-          <label className="text-sm md:col-span-2">Server token
-            <input type="password" autoComplete="off" value={form.token} onChange={e => setForm(f => ({ ...f, token: e.target.value }))} className={input} />
+          <label className="text-sm md:col-span-2">Broker / Server RESO Token (encrypted at rest)
+            <input type="password" autoComplete="off" value={form.token} onChange={e => setForm(f => ({ ...f, token: e.target.value }))} placeholder="Paste issued RESO token (never shown after save)" className={input} />
           </label>
         )}
         {form.authType === 'OAUTH_CLIENT' && (
@@ -134,11 +136,11 @@ export default function MlsConnectionForm() {
             </label>
           </>
         )}
-        <label className="text-sm">Your MLS Member ID (List Agent Key)
+        <label className="text-sm">MLS Member ID (Broker / List Agent Key)
           <input value={form.memberMlsId} onChange={e => setForm(f => ({ ...f, memberMlsId: e.target.value }))} placeholder="e.g. 123456" className={input} />
         </label>
-        <label className="text-sm">MLS Organization ID (OUID, optional)
-          <input value={form.organizationId} onChange={e => setForm(f => ({ ...f, organizationId: e.target.value }))} className={input} />
+        <label className="text-sm">MLS Office ID / Organization ID (OUID)
+          <input value={form.organizationId} onChange={e => setForm(f => ({ ...f, organizationId: e.target.value }))} placeholder="e.g. OFF-1024" className={input} />
         </label>
       </div>
 

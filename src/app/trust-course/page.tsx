@@ -30,7 +30,7 @@ function CaptureForm({ intent, cta }: { intent: "mini" | "full" | "consult"; cta
     intent === "mini"
       ? { source: "Trust Mini-Course", notes: "Trust Funding 101 mini-course enrollment (free lead magnet).", done: "You are in! Check your email - your first lesson and the funding checklist are on the way." }
       : intent === "full"
-        ? { source: "Trust Full Package", notes: "Trust Funding full 1-on-1 package purchase intent ($497). Send secure invoice.", done: "Reserved! Our team will send your secure $497 invoice and booking link within one business day." }
+        ? { source: "Trust Full Package", notes: "Trust Funding full 1-on-1 package inquiry. Follow up with consultation & scheduling.", done: "Request received! Our team will reach out within one business day to schedule your 1-on-1 session." }
         : { source: "Trust Consultation", notes: "Trust consultation request (free 20-min call with Excel Legacy Realty team).", done: "Request received! We will reach out within one business day to confirm your consultation time." };
 
   async function submit(e: React.FormEvent) {
@@ -112,7 +112,7 @@ export default function TrustCoursePage() {
         <section className="rounded-2xl border border-secondary/40 p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-2xl font-bold">Full package - 1-on-1 training</h2>
-            <span className="text-2xl font-bold text-secondary">$497</span>
+            <span className="rounded-full border border-secondary/30 bg-secondary/10 px-3 py-1 text-xs font-semibold text-secondary">1-on-1 Guided Training</span>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">Work directly with the Excel Legacy Realty team to fund your trust correctly, with your actual assets on the table.</p>
           <ul className="mt-4 space-y-2">
@@ -122,9 +122,9 @@ export default function TrustCoursePage() {
           </ul>
           <div className="mt-5 grid gap-6 md:grid-cols-2">
             <div>
-              <h3 className="mb-2 font-semibold text-sm uppercase tracking-widest text-secondary">Buy the package</h3>
-              <CaptureForm intent="full" cta="Buy now - $497" />
-              <p className="mt-2 text-xs text-muted-foreground">Reserve now; pay securely by invoice. No payment taken on this page.</p>
+              <h3 className="mb-2 font-semibold text-sm uppercase tracking-widest text-secondary">Request 1-on-1 training</h3>
+              <CaptureForm intent="full" cta="Request 1-on-1 Training" />
+              <p className="mt-2 text-xs text-muted-foreground">No payment taken on this page — our team follows up directly to scope and schedule your session.</p>
             </div>
             <div>
               <h3 className="mb-2 font-semibold text-sm uppercase tracking-widest text-secondary">Or start with a free consult</h3>

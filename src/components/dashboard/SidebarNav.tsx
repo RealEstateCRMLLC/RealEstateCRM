@@ -93,13 +93,13 @@ const GROUPS: NavGroup[] = [
       {
         label: 'TSF Master Bundle',
         href: '/trust-services',
-        tooltip: 'Flagship Personal Property Trust funnel ($0 Free Kit / $997 Assembly / $1,497 Master Bundle). Signups feed Leads.',
+        tooltip: 'Flagship Personal Property Trust funnel (Free Branded Kit, Taught Course, and Done-With-You Assembly). Signups feed Leads.',
         badge: 'TSF',
       },
       {
         label: 'Trust Funding Course',
         href: '/trust-course',
-        tooltip: 'Public Trust Funding 101 mini-course and $497 1-on-1 package funnel.',
+        tooltip: 'Public Trust Funding 101 mini-course and 1-on-1 guided training inquiry funnel.',
       },
       {
         label: 'Drip Campaigns',

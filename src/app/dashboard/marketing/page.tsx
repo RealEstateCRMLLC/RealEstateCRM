@@ -41,28 +41,28 @@ const MARKETING_TABS: {
     id: 'funnels',
     label: 'Trust Services & Public Funnels',
     icon: '🏛️',
-    tooltip: 'Shareable high-converting public funnels: TSF Master Bundle ($0 / $997 / $1,497), Trust Funding 101 ($0 / $497), and Client Portal.',
+    tooltip: 'Shareable high-converting public funnels: TSF Master Bundle, Trust Funding 101, and Client Portal.',
   },
 ];
 
 const PUBLIC_FUNNELS = [
   {
     title: 'TSF Master Bundle — Personal Property Trust Services',
-    badge: 'Flagship • $0 / $997 / $1,497',
+    badge: 'Flagship • Free Kit + Consultation',
     path: '/trust-services',
     icon: '🏛️',
     summary:
-      'Complete public funnel offering the free branded 3-document Personal Property Trust kit (Declaration, Appointment of Trustee, Affidavit & Certificate), 8-module funding course, $997 Done-With-You trust assembly, and $1,497 TSF Master Bundle with attorney-review routing.',
+      'Complete public funnel offering the free branded 3-document Personal Property Trust kit (Declaration, Appointment of Trustee, Affidavit & Certificate), 8-module funding course, and Done-With-You trust assembly with attorney-review routing.',
     tooltip:
       'Every form submission on /trust-services creates a tagged CRM Lead with tier & source attribution so your team can follow up immediately.',
   },
   {
-    title: 'Trust Funding 101 — Mini-Course & 1-on-1 Package',
-    badge: 'Lead Magnet • Free / $497',
+    title: 'Trust Funding 101 — Mini-Course & 1-on-1 Guided Training',
+    badge: 'Lead Magnet • Free Mini-Course',
     path: '/trust-course',
     icon: '🎓',
     summary:
-      'Educational trust-funding funnel with free mini-course enrollment, $497 1-on-1 Guided Package, and consultation booking wired directly into your Leads pipeline.',
+      'Educational trust-funding funnel with free mini-course enrollment, 1-on-1 Guided Training inquiry, and consultation booking wired directly into your Leads pipeline.',
     tooltip:
       'Share on social posts, email signatures, or SMS campaigns to capture high-intent homeowner and investor leads.',
   },
