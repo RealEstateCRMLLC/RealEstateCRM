@@ -6,10 +6,8 @@ import path from "node:path";
 import { mkdtemp, rm } from "node:fs/promises";
 import { resolveInternalAppUrl } from "../src/lib/sync-scheduler.ts";
 import {
-  TSF_SKUS,
-  UNIVERSAL_PLATFORM_BASE_MONTHLY_USD,
-  buildBillingQuote,
-  generateInvoiceRef,
+  buildCustomBillingQuote,
+  isBillingCheckoutArmed,
 } from "../src/lib/billing/checkout.ts";
 import {
   appendBillingOrder,
@@ -34,77 +32,106 @@ test("sync-scheduler resolveInternalAppUrl honors PORT=3210 on Hetzner and INTER
   );
 });
 
-test("buildBillingQuote prices all TSF SKUs and rejects unknown SKUs", () => {
-  assert.equal(Object.keys(TSF_SKUS).length, 5);
-
-  const clientBundle = buildBillingQuote({ kind: "tsf", tsfSkuId: "tsf-bundle-client" });
-  assert.equal(clientBundle.ok, true);
-  if (clientBundle.ok) {
-    assert.equal(clientBundle.quote.oneTimeTotalUsd, 997);
-    assert.equal(clientBundle.quote.monthlyTotalUsd, 0);
-    assert.equal(clientBundle.quote.dealValueUsd, 997);
-  }
-
-  const standaloneBundle = buildBillingQuote({ kind: "tsf", tsfSkuId: "tsf-bundle" });
-  assert.equal(standaloneBundle.ok, true);
-  if (standaloneBundle.ok) {
-    assert.equal(standaloneBundle.quote.oneTimeTotalUsd, 1497);
-  }
-
-  const bad = buildBillingQuote({ kind: "tsf", tsfSkuId: "non-existent" });
-  assert.equal(bad.ok, false);
+test("isBillingCheckoutArmed stays disarmed by default even if STRIPE_SECRET_KEY is present", () => {
+  assert.equal(isBillingCheckoutArmed({}), false);
+  assert.equal(isBillingCheckoutArmed({ STRIPE_SECRET_KEY: "sk_live_example" }), false);
+  assert.equal(
+    isBillingCheckoutArmed({
+      STRIPE_SECRET_KEY: "sk_live_example",
+      BILLING_CHECKOUT_ENABLED: "false",
+    }),
+    false,
+  );
+  assert.equal(
+    isBillingCheckoutArmed({
+      BILLING_CHECKOUT_ENABLED: "true",
+    }),
+    true,
+  );
 });
 
-test("buildBillingQuote computes Universal CRM monthly subscription and filters incompatible add-ons", () => {
-  const res = buildBillingQuote({
-    kind: "universal",
-    sectorId: "healthcare",
-    addOnIds: ["ai-receptionist", "compliance-vault", "commerce-sync"], // commerce-sync is retail-only
-    includePlatformBase: true,
+test("buildCustomBillingQuote totals explicit custom pilot items (e.g. $500 setup + $500/mo) and rejects invalid items", () => {
+  const pilot = buildCustomBillingQuote({
+    kind: "pilot",
+    summaryTitle: "60-Day Brokerage CRM Pilot",
+    items: [
+      {
+        id: "pilot-setup",
+        name: "Brokerage Pilot Setup",
+        description: "One-time onboarding & MLS integration setup",
+        amountUsd: 500,
+        interval: "one_time",
+      },
+      {
+        id: "pilot-monthly",
+        name: "Brokerage Pilot Monthly",
+        description: "60-day pilot monthly service",
+        amountUsd: 500,
+        interval: "month",
+      },
+    ],
   });
-  assert.equal(res.ok, true);
-  if (res.ok) {
-    // 199 base + 149 ai-receptionist + 129 compliance-vault = 477/mo
-    assert.equal(res.quote.monthlyTotalUsd, UNIVERSAL_PLATFORM_BASE_MONTHLY_USD + 149 + 129);
-    assert.equal(res.quote.dealValueUsd, (UNIVERSAL_PLATFORM_BASE_MONTHLY_USD + 149 + 129) * 12);
-    assert.equal(res.quote.items.length, 3);
-    assert.equal(res.quote.payee, "United Beats LLC");
+  assert.equal(pilot.ok, true);
+  if (pilot.ok) {
+    assert.equal(pilot.quote.oneTimeTotalUsd, 500);
+    assert.equal(pilot.quote.monthlyTotalUsd, 500);
+    assert.equal(pilot.quote.dealValueUsd, 500 + 500 * 12);
+    assert.equal(pilot.quote.payee, "United Beats LLC");
   }
 
-  const ref = generateInvoiceRef(new Date("2026-11-14T12:00:00Z"), "a1b2");
-  assert.equal(ref, "INV-UB-20261114-A1B2");
+  const empty = buildCustomBillingQuote({
+    kind: "custom",
+    summaryTitle: "Empty",
+    items: [],
+  });
+  assert.equal(empty.ok, false);
+
+  const negative = buildCustomBillingQuote({
+    kind: "custom",
+    summaryTitle: "Invalid",
+    items: [
+      {
+        id: "bad",
+        name: "Bad",
+        description: "Negative",
+        amountUsd: -1,
+        interval: "one_time",
+      },
+    ],
+  });
+  assert.equal(negative.ok, false);
 });
 
-test("order-store persists orders and marks matching Stripe/invoice orders PAID", async () => {
+test("order-store persists orders and marks matching records PAID", async () => {
   const dir = await mkdtemp(path.join(os.tmpdir(), "billing-orders-"));
   const storePath = path.join(dir, "orders.json");
   try {
     await appendBillingOrder(
       {
         id: "ord-1",
-        invoiceRef: "INV-UB-20261114-TEST",
-        kind: "universal",
+        invoiceRef: "PILOT-TEST-001",
+        kind: "pilot",
         mode: "invoice",
         status: "INVOICED",
         payee: "United Beats LLC",
         workspaceId: "ws-1",
-        sectorId: "legal",
+        sectorId: "real-estate",
         language: "en",
-        customer: { name: "Jane Counsel", email: "jane@law.example" },
+        customer: { name: "Test Broker", email: "broker@example.com" },
         items: [
           {
-            id: "universal-platform-core",
-            name: "Universal CRM Core",
-            description: "Core",
-            amountUsd: 199,
-            interval: "month",
+            id: "pilot-setup",
+            name: "Pilot Setup",
+            description: "Setup",
+            amountUsd: 500,
+            interval: "one_time",
           },
         ],
-        oneTimeTotalUsd: 0,
-        monthlyTotalUsd: 199,
-        dealValueUsd: 2388,
+        oneTimeTotalUsd: 500,
+        monthlyTotalUsd: 500,
+        dealValueUsd: 6500,
         dealId: "deal-123",
-        createdAt: "2026-11-14T22:00:00.000Z",
+        createdAt: "2026-11-15T04:00:00.000Z",
       },
       storePath,
     );
@@ -114,7 +141,7 @@ test("order-store persists orders and marks matching Stripe/invoice orders PAID"
     assert.equal(listed[0].status, "INVOICED");
 
     const paid = await markBillingOrderPaid(
-      { invoiceRef: "INV-UB-20261114-TEST" },
+      { invoiceRef: "PILOT-TEST-001" },
       storePath,
     );
     assert.ok(paid);
@@ -130,7 +157,7 @@ test("verifyStripeWebhookSignature validates authentic HMAC-SHA256 signatures an
   const nowSec = 1_794_697_000;
   const payload = JSON.stringify({
     type: "checkout.session.completed",
-    data: { object: { id: "cs_test_1", client_reference_id: "INV-UB-20261114-TEST" } },
+    data: { object: { id: "cs_test_1", client_reference_id: "PILOT-TEST-001" } },
   });
   const sig = crypto
     .createHmac("sha256", secret)

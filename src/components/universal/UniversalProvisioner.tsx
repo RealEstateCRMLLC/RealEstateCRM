@@ -30,7 +30,6 @@ import {
   GENERATION_EXPERIENCES,
   type GenerationExperience,
 } from "@/lib/universal/tenant";
-import { UNIVERSAL_PLATFORM_BASE_MONTHLY_USD } from "@/lib/billing/checkout";
 import {
   Tooltip,
   TooltipContent,
@@ -89,18 +88,11 @@ export default function UniversalProvisioner({
   const [customWorkUnit, setCustomWorkUnit] = useState("");
   const [customOffering, setCustomOffering] = useState("");
 
-  // Public B2B pilot request & subscription checkout state
+  // Public B2B pilot request state (lead-only inquiry — custom pilot pricing by proposal)
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [leadStatus, setLeadStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
-  const [invoiceResult, setInvoiceResult] = useState<{
-    invoiceRef: string;
-    monthlyTotalUsd: number;
-    methods: string[];
-    note: string;
-  } | null>(null);
-  const [copiedInvoiceRef, setCopiedInvoiceRef] = useState(false);
   const [copiedJson, setCopiedJson] = useState(false);
 
   useEffect(() => {
@@ -220,64 +212,32 @@ export default function UniversalProvisioner({
     if (!contactName.trim() || !contactEmail.trim()) return;
     setLeadStatus("sending");
     try {
-      const blueprintNotes = [
-        `Universal CRM Tenant Provisioning & Subscription`,
+      const summary = [
+        `Universal CRM Tenant Provisioning Pilot Request`,
         `Business: ${businessName.trim() || "Unspecified"}`,
         `Sector Pack: ${sector.name} (${sector.id})`,
         `Vocabulary: ${effectiveVocab.customer} -> ${effectiveVocab.workUnit} -> ${effectiveVocab.offering}`,
         `Primary Language: ${language.label} (${language.code}${language.rtl ? ", RTL" : ""})`,
         `Generation UX: ${generationMode}`,
+        `Selected Add-Ons: ${enabledAddOns.map((a) => a.name).join(", ") || "None"}`,
         `Brand Colors: primary ${primaryColor}, accent ${accentColor}`,
       ].join(" | ");
 
-      const res = await fetch("/api/billing/checkout", {
+      const res = await fetch("/api/leads/external", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          kind: "universal",
-          customerName: contactName.trim(),
-          customerEmail: contactEmail.trim(),
-          customerPhone: contactPhone.trim() || undefined,
-          companyName: businessName.trim() || undefined,
-          sectorId: sector.id,
-          language: language.code,
-          addOnIds: enabledAddOns.map((a) => a.id),
-          includePlatformBase: true,
-          notes: blueprintNotes,
+          name: contactName.trim(),
+          email: contactEmail.trim(),
+          phone: contactPhone.trim() || undefined,
+          source: "Universal CRM Pilot Request",
+          notes: summary,
         }),
       });
-      const data = await res.json();
-      if (!res.ok || !data?.ok) throw new Error(data?.error || "Request failed");
-
-      if (data.mode === "stripe" && data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-        return;
-      }
-
-      setInvoiceResult({
-        invoiceRef: data.order?.invoiceRef || "INV-PENDING",
-        monthlyTotalUsd:
-          data.order?.monthlyTotalUsd ??
-          UNIVERSAL_PLATFORM_BASE_MONTHLY_USD + monthlyTotal,
-        methods: data.paymentInstructions?.methods || [],
-        note:
-          data.paymentInstructions?.note ||
-          "Official United Beats LLC invoice and CRM proposal created.",
-      });
+      if (!res.ok) throw new Error("Request failed");
       setLeadStatus("done");
     } catch {
       setLeadStatus("error");
-    }
-  }
-
-  async function copyInvoiceNumber() {
-    if (!invoiceResult?.invoiceRef) return;
-    try {
-      await navigator.clipboard.writeText(invoiceResult.invoiceRef);
-      setCopiedInvoiceRef(true);
-      setTimeout(() => setCopiedInvoiceRef(false), 2000);
-    } catch {
-      // Ignore clipboard failure
     }
   }
 
@@ -740,62 +700,34 @@ export default function UniversalProvisioner({
 
               <div className="flex items-center justify-between border-t border-border/60 pt-3 text-[11px] text-muted-foreground">
                 <span>
-                  Core (${UNIVERSAL_PLATFORM_BASE_MONTHLY_USD}/mo) + {t(language.code, "monthlyAddOns")} ({enabledAddOns.length})
+                  {t(language.code, "monthlyAddOns")} ({enabledAddOns.length})
                 </span>
                 <span className="font-bold text-foreground">
-                  ${UNIVERSAL_PLATFORM_BASE_MONTHLY_USD + monthlyTotal}/mo total
+                  ${monthlyTotal}/mo add-ons • Custom pilot proposal
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Subscription Checkout / Official United Beats LLC Invoice Card */}
-          {editable && (
+          {/* B2B Pilot Lead Capture Card (Lead-Only — No Auto-Invoicing or Self-Serve Checkout) */}
+          {mode === "public" && (
             <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-sm font-bold text-foreground">
-                  {mode === "public"
-                    ? "Launch & Subscribe with United Beats LLC"
-                    : "Subscription & Add-On Checkout (United Beats LLC)"}
+                  Request a Custom Workspace Pilot
                 </h3>
-                <InfoTip text="Creates a live Stripe Checkout subscription when STRIPE_SECRET_KEY is configured, or generates an official itemized United Beats LLC invoice (Mercury ACH / Wire or Check) and tracks the proposal in CRM Deals." />
+                <InfoTip text="Saves your configured sector pack, vocabulary, language, and add-on blueprint as a lead inquiry for United Beats LLC (Bob & Lum). No charge or invoice is generated automatically." />
               </div>
               <p className="text-xs text-muted-foreground">
-                Provision your branded <strong>{sector.name}</strong> workspace in{" "}
-                <strong>{language.label}</strong> (${UNIVERSAL_PLATFORM_BASE_MONTHLY_USD + monthlyTotal}/mo
-                including {enabledAddOns.length} add-on{enabledAddOns.length === 1 ? "" : "s"}).
+                We provision your branded <strong>{sector.name}</strong> workspace in{" "}
+                <strong>{language.label}</strong> and scope custom pilot terms for your team.
               </p>
 
               {leadStatus === "done" ? (
-                <div className="rounded-xl border border-secondary/50 bg-secondary/10 p-4 space-y-2 text-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold text-foreground">
-                      Invoice Issued: {invoiceResult?.invoiceRef || "INV-ACTIVE"}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={copyInvoiceNumber}
-                      className="rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-semibold hover:border-secondary"
-                    >
-                      {copiedInvoiceRef ? "Copied!" : "Copy Ref"}
-                    </button>
-                  </div>
-                  <p className="font-semibold text-foreground">
-                    {sector.name} Workspace + {enabledAddOns.length} Add-On{enabledAddOns.length === 1 ? "" : "s"} — $
-                    {invoiceResult?.monthlyTotalUsd ?? UNIVERSAL_PLATFORM_BASE_MONTHLY_USD + monthlyTotal}/mo
-                  </p>
-                  <p className="text-muted-foreground">
-                    {invoiceResult?.note ||
-                      `United Beats LLC (Bob & Lum) saved your ${sector.name} (${language.label}) blueprint and created your proposal.`}
-                  </p>
-                  {invoiceResult && invoiceResult.methods.length > 0 && (
-                    <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
-                      {invoiceResult.methods.map((m) => (
-                        <li key={m}>{m}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                <p className="rounded-xl border border-secondary/40 bg-secondary/10 px-4 py-3 text-xs font-medium text-foreground">
+                  Blueprint received! United Beats LLC (Bob &amp; Lum) saved your{" "}
+                  <strong>{sector.name}</strong> ({language.label}) pilot request and will follow up directly.
+                </p>
               ) : (
                 <form onSubmit={submitPilotRequest} className="space-y-2.5">
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -804,7 +736,7 @@ export default function UniversalProvisioner({
                       required
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
-                      placeholder="Billing contact full name"
+                      placeholder="Your full name"
                       className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
                     />
                     <input
@@ -812,7 +744,7 @@ export default function UniversalProvisioner({
                       required
                       value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="Billing email"
+                      placeholder="Work email"
                       className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
                     />
                   </div>
@@ -829,12 +761,12 @@ export default function UniversalProvisioner({
                     className="w-full rounded-xl bg-secondary px-4 py-2.5 text-xs font-bold text-black hover:opacity-95 disabled:opacity-60"
                   >
                     {leadStatus === "sending"
-                      ? "Generating Checkout / Invoice..."
-                      : `Start ${sector.name} Subscription ($${UNIVERSAL_PLATFORM_BASE_MONTHLY_USD + monthlyTotal}/mo)`}
+                      ? "Submitting Blueprint..."
+                      : `Request My ${sector.name} Pilot`}
                   </button>
                   {leadStatus === "error" && (
                     <p className="text-xs text-red-500">
-                      Could not create checkout right now — please copy the JSON manifest or try again.
+                      Could not submit right now — please copy the JSON manifest or try again.
                     </p>
                   )}
                 </form>

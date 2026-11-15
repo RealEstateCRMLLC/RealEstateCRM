@@ -1,5 +1,11 @@
 # TODO.md
 
+### v0.66.1 completed & active items (2026-11-15)
+- [x] **Production Invoice/Deal Audit:** Verified on Hetzner (`prisma/dev.db` + `data/`) that `0` `INV-UB-*` orders, `0` checkout leads, and `0` unapproved `PROPOSAL` deals were created during `v0.66.0`.
+- [x] **Disarm Self-Serve Checkout & Unapproved Pricing (`v0.66.1`):** Removed unapproved `$199/mo` and `$497/$997/$1,497` checkout SKUs from `src/lib/billing/checkout.ts`, gated `/api/billing/checkout` behind explicit `BILLING_CHECKOUT_ENABLED=true` (`armed: false`, `mode: 'lead_only'`, `POST` -> `403`), and replaced fixed SKU quoting with `buildCustomBillingQuote()` for explicit owner-approved pilot proposals only (Hank 60-day pilot: `$500` setup + `$500/mo`).
+- [x] **Restore Lead-Only Public Forms:** Reverted `TrustLeadForm.tsx` (`/trust-services`) and `UniversalProvisioner.tsx` (`/universal`) to capture leads only via `POST /api/leads/external` (zero `INV-UB-*` invoices or `PROPOSAL` deals).
+- [x] **Owner-Split & Verification Labeling Governance:** Documented Hank-only items (broker approval, MLS Member/Office ID, broker RESO token entered via `/dashboard/settings?tab=integrations`, never email/chat; zero Hank contact from this lane) vs Robert/United Beats LLC-only items (`TWILIO_PHONE_NUMBER`, `RESEND_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`), and labeled Hetzner `.env` checks as `lane-reported (key-name presence only, not end-to-end verified)`.
+
 ### v0.66.0 completed & active items (2026-11-14)
 - [x] **Unified Checkout & Invoice Engine (`docs/UNIVERSAL_CRM.md` Rollout #4 + TSF Checkout):** Built `src/lib/billing/checkout.ts`, `src/lib/billing/order-store.ts`, `GET/POST /api/billing/checkout`, and `POST /api/billing/webhook` (HMAC-SHA256 `stripe-signature` verification). Supports all 5 TSF SKUs (`$497`–`$1,497`) and recurring Universal CRM subscriptions (`$199/mo` + United Beats LLC add-ons), launching Stripe Checkout automatically when `STRIPE_SECRET_KEY` is configured or issuing official `INV-UB-*` Mercury ACH/Wire & Check invoices + CRM `PROPOSAL` Deals today.
 - [x] **Interactive Checkout Wiring:** Wired `TrustLeadForm.tsx` (`/trust-services`, incl. `$997` Excel Legacy client bundle rate toggle) and `UniversalProvisioner.tsx` (`/universal` + `/dashboard/settings?tab=sector-pack`) to `/api/billing/checkout` with copyable invoice references.
