@@ -20,7 +20,7 @@ export function WorkspaceSwitcher({
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="workspace-switcher" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <label htmlFor="workspace-switcher" className="hidden sm:inline text-xs font-medium text-muted-foreground uppercase tracking-wider">
         Workspace:
       </label>
       <select

@@ -118,7 +118,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 border-b border-border bg-background flex items-center justify-between px-6 sticky top-0 z-10">
+        <header className="h-16 border-b border-border bg-background flex items-center justify-between px-3 sm:px-6 sticky top-0 z-10">
           <div className="md:hidden flex items-center gap-2">
             <div
               className="w-6 h-6 rounded-sm bg-secondary flex items-center justify-center font-bold text-secondary-foreground text-xs"
@@ -147,7 +147,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <ThemeToggle />
               <NotificationDropdown />
               <WorkspaceSwitcher workspaces={workspaces} activeSlug={access?.workspaceSlug || ''} />
-              <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-secondary/15 text-secondary border border-secondary/30 uppercase tracking-wider">
+              <span className="hidden sm:inline-flex px-2.5 py-1 text-[10px] font-bold rounded-full bg-secondary/15 text-secondary border border-secondary/30 uppercase tracking-wider">
                 {(access?.workspaceRole ?? 'REALTOR_AGENT').replace('REALTOR_', '').replace('_', ' ')} Seat
               </span>
               <UserProfileDropdown 
@@ -161,8 +161,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
         </header>
         <div className="flex-1 flex overflow-hidden">
-          <div className="flex-1 overflow-auto p-6">{children}</div>
-          <CommunicationsHub />
+          <div className="flex-1 overflow-auto p-3 sm:p-6">{children}</div>
+          {/* Comms hub is a fixed 384px rail when expanded: below lg it would
+              consume the whole viewport and clip the page, so it is desktop-only. */}
+          <div className="hidden lg:flex">
+            <CommunicationsHub />
+          </div>
         </div>
       </main>
       <LeadAlertListener />

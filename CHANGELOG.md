@@ -1,3 +1,11 @@
+## v0.66.9 (2026-11-16)
+
+### Exhaustive browser test pass - 3 production defects fixed & deployed
+- Tested (Edge CDP + agent-browser, desktop + mobile, prod + local): public pages, 37/37 dashboard routes, tooltip hover confirmed, calculator live recompute, lead form, Universal sector/RTL switching, all mounts. Tests 52 pass; verify-live-prod 17/17.
+- leadcaller: prefix-aware `apiUrl()` for all 25 client API calls (stats/dialer were hitting the main CRM and failing JSON parse).
+- leadcaller + foreclosure: replaced inert `withAuth` middleware with getToken guard (pages 307 to /login, APIs 401 JSON); foreclosure login no longer advertises default credentials; Prisma clients regenerated with debian engine (fixes 500s).
+- Main dashboard mobile layout: comms rail desktop-only below lg, responsive header/padding. Deployed live.
+
 ## v0.66.8 (2026-11-16)
 
 ### Proposal wording approved (docs)
