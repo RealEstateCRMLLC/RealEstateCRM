@@ -1,3 +1,8 @@
+## v0.66.4 (2026-11-15)
+
+### Steady-state + log watch (docs)
+- Sync 0/0 at 360ecbb; dashboard 36/36 linked, 87 tooltip refs. Prod: 14/14 PM2 online, error log only stale Server Action browser noise, verify-live-prod green on v0.66.3. Watch: server disk 85% (11G free, was 80%) - cleanup candidate next pass (keep newest backups). Docs-only; prod app remains v0.66.3.
+
 ## v0.66.3 (2026-11-15)
 
 ### Security: hardcoded universal-admin credential removed

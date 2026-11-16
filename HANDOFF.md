@@ -1,3 +1,6 @@
+## v0.66.4 - Steady-state loop (2026-11-15, Muse Code lane)
+Prod v0.66.3 healthy post-deploy (14 PM2, logs clean). Disk 85% trending up - flagged. Open: proposal wording, Tier-1 keys, gh re-auth. Local servers OFF.
+
 ## v0.66.3 DEPLOYED to Hetzner (2026-11-15, Muse Code lane)
 Owner said deploy: built BelowNormal (19.4s), packaged deploy-v3.tar.gz (113.4 MB, 4051 files, MD5 d887743fa2450919b0ada94b75084b3c local==remote, 0 bad files), swap-safe.sh backup /tmp/ercm-backup-1794826859, BEFORE 0.66.2 -> AFTER 0.66.3, prisma/dev.db 565248 bytes preserved, AUTH_SESSION_HTTP 200. verify-live-prod ALL PASSED; live credential test: admin123 now HTTP 401, session {}. Hardcoded-admin hole closed in production.
 
