@@ -1,3 +1,6 @@
+## v0.66.3 - Hardcoded admin credential removed (2026-11-15, Muse Code lane)
+Caught up from Antigravity 8e716423 (v0.66.2 shipped/deployed/pushed; session ended mid auth-audit). Completed its audit finding: hardcoded universal-admin OWNER login env-gated (AUTH_UNIVERSAL_ADMIN_PASSWORD), guard test 2/2, eslint clean. Prod still v0.66.2 - deploy pending owner word. Local servers OFF.
+
 ## v0.66.2 - Public SKU Sweep + Broker MLS Office ID & Workspace CSV Exports DEPLOYED (2026-11-15, Antigravity Gemini lane)
 Owner-authorized (`ask_question`) follow-up addressing Gemini Monitoring's visual SKU guardrail and Hank's 60-day pilot acceptance / walkthrough readiness:
 - **Zero Unapproved SKUs Across All Live Pages:** Removed all remaining legacy `v0.63.0` static `$497 / $997 / $1,497` (`497`, `997`, `1497`) price tags across `/`, `/trust-services` (incl. JSON-LD `Offer` schema), `/trust-course`, `CommandCenter.tsx`, `SidebarNav.tsx`, `dashboard/marketing/page.tsx`, and `dashboard/help-center/page.tsx`, backed by source + live-DOM regression checks (`tests/billing.test.mts`, `deploy/verify-live-prod.mjs`).

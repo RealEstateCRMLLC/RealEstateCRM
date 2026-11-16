@@ -1,3 +1,8 @@
+## v0.66.3 (2026-11-15)
+
+### Security: hardcoded universal-admin credential removed
+- src/lib/auth.ts: the unconditional admin@excellegacyrealtygroup.site / admin123 OWNER login (found by the Antigravity lanes auth audit, idx 1304-1313) is now env-gated behind AUTH_UNIVERSAL_ADMIN_PASSWORD (+ optional AUTH_UNIVERSAL_ADMIN_EMAIL); unset env = disabled. Env-gated demo-user unchanged. New tests/auth-guard.test.mts (2/2) pins this; money-paths test reads the env password. NOT yet deployed - production still runs v0.66.2 until the next deploy.
+
 ## v0.66.2 (2026-11-15)
 
 ### Public SKU Sweep & Hank Pilot Demo Polish (MLS Office ID + Workspace CSV Exports)

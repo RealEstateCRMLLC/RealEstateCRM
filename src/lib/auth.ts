@@ -83,8 +83,12 @@ export const authOptions: NextAuthOptions = {
         const demoEmail = process.env.AUTH_DEMO_EMAIL?.trim() || process.env.MIREALSOURCE_USERNAME?.trim() || '';
         const demoPassword = process.env.AUTH_DEMO_PASSWORD?.trim() || process.env.MIREALSOURCE_PASSWORD?.trim() || '';
 
-        // Universal Admin for Dev
-        if (identifier === 'admin@excellegacyrealtygroup.site' && password === 'admin123') {
+        // Universal Admin (dev/demo only): env-gated, never hardcoded.
+        // Disabled unless AUTH_UNIVERSAL_ADMIN_PASSWORD is set on the server.
+        const universalAdminEmail =
+          process.env.AUTH_UNIVERSAL_ADMIN_EMAIL?.trim() || 'admin@excellegacyrealtygroup.site';
+        const universalAdminPassword = process.env.AUTH_UNIVERSAL_ADMIN_PASSWORD?.trim() || '';
+        if (universalAdminPassword && identifier === universalAdminEmail && password === universalAdminPassword) {
           return {
             id: 'universal-admin',
             name: 'Universal Admin',

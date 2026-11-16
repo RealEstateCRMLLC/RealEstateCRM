@@ -76,7 +76,7 @@ let adminReady = false;
 const agentJar = new Jar();
 async function admin() {
   if (!adminReady) {
-    const res = await login(adminJar, 'admin@excellegacyrealtygroup.site', 'admin123');
+    const res = await login(adminJar, 'admin@excellegacyrealtygroup.site', process.env.AUTH_UNIVERSAL_ADMIN_PASSWORD || 'admin123');
     assert.ok([200, 302].includes(res.status), `admin login failed: ${res.status}`);
     adminReady = true;
   }
