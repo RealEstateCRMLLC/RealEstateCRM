@@ -1,3 +1,8 @@
+## v0.66.6 (2026-11-15)
+
+### Focused test pass (docs)
+- Focused suites green: auth-guard + billing + universal 16/16 (auth env-gate pinned, billing stays disarmed by default). Prod v0.66.3 healthy (14 PM2, / 200). Docs-only bump.
+
 ## v0.66.5 (2026-11-15)
 
 ### Hetzner disk cleanup (docs)

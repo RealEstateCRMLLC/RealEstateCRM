@@ -1,3 +1,6 @@
+## v0.66.6 - Focused tests green (2026-11-15, Muse Code lane)
+16/16 focused (auth-guard/billing/universal). Prod steady. Open: proposal wording, Tier-1 keys, gh re-auth, disk watch (fwber growth).
+
 ## v0.66.5 - Disk cleanup (2026-11-15, Muse Code lane)
 Old backups pruned (newest/app kept incl. todays ercm), 85->84%. fwber 6.9G is the growth source (other lane). Prod healthy. Open: proposal wording, Tier-1 keys, gh re-auth.
 
