@@ -274,7 +274,7 @@
 - [x] Regenerate docs/SUBMODULE_MAP.md + docs/LIBRARIES.md
 
 ### Follow-ups for next session
-- [ ] Delete 10 redundant remote feature branches (manual: `git push origin --delete <branch>`)
+- [x] Delete redundant remote feature branches (done v0.66.7: 6 origin branches deleted, 0 unique commits vs main; SHAs in HANDOFF)
 - [ ] Wire real API keys (Stripe, Twilio, SendGrid, Mapbox, etc.)
 - [ ] Deploy 8 sub-services to Hetzner
 
@@ -290,7 +290,7 @@
 - [ ] **legacyleads `/listings` mock data** â†’ real MLS/property-data
 - [ ] **main CRM `tsconfig.json` has `ignoreBuildErrors: true`** â€” type errors ship silently; tighten gradually
 - [ ] **API keys still unwired**: Twilio, SendGrid/Resend, Stripe, Google Maps, HubSpot OAuth, BS&A, Magnific, OpenAI (embeddings/voice)
-- [ ] 10 redundant remote feature branches safe to delete (`git push origin --delete <branch>`)
+- [x] Redundant remote feature branches deleted (v0.66.7; origin now main only)
 
 ### Cross-Service Integration Gap (2026-10-22, found during UI click-through)
 - [x] **Workspace mapping between main CRM and ContentPlanner** â€” DONE (v0.58.58): CRM proxy syncs the active workspace into ContentPlanner (same id) and signs it into the service JWT; API reads scope to the JWT workspace claim.

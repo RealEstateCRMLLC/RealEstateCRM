@@ -1,3 +1,9 @@
+## v0.66.7 (2026-11-16)
+
+### Catch-up + redundant branch cleanup (docs)
+- Session catch-up (01a1d1b1 + 01a1d8a5): tests 49 pass / 0 fail, verify-live-prod ALL PASSED, Hetzner disk 84% + 14 PM2 online. gh CLI auth confirmed restored (CI 5/5 green).
+- Deleted 6 redundant origin branches (0 unique commits vs main; SHAs recorded in HANDOFF for restore). Synced package.json version to 0.66.7. Docs-only; prod app v0.66.3.
+
 ## v0.66.6 (2026-11-15)
 
 ### Focused test pass (docs)

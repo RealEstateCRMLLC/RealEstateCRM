@@ -1,3 +1,6 @@
+## v0.66.7 - Catch-up + redundant branch cleanup (2026-11-16, Muse Code lane)
+Caught up from Muse sessions 01a1d1b1 (Nov 12-16) + 01a1d8a5 (Nov 14-16). Full suite 49 pass / 0 fail / 2 skipped (live-server suites, local servers OFF per owner rule); verify-live-prod ALL PASSED (billing disarmed lead_only, 8 listings EXL-1001 intact, all mounts 200). Hetzner: disk 84% (60G/75G, 13G free), 14 PM2 online, load ~0.4. gh CLI re-auth confirmed working (robertpelloni keyring) - CI last 5 runs green; that owner blocker is closed. Deleted 6 redundant origin branches (all verified 0 unique commits vs main; tips: dashboard-newest/jules-*/rag-consolidation-* @7c99126, gate1/foreclosure-parser-tests @4d6fca8 - restorable from SHA); origin now main only. Legacy remote untouched. Local submodule dirt is local-only (.env.production.local, database.sqlite) - not committed. Synced package.json version (was stale 0.66.2) to 0.66.7. Open (owner-only): proposal wording + Hank signature, Tier-1 keys (Stripe, RESO MLS, Twilio number, Resend), real-browser tooltip check, fwber disk growth (other lane).
+
 ## v0.66.6 - Focused tests green (2026-11-15, Muse Code lane)
 16/16 focused (auth-guard/billing/universal). Prod steady. Open: proposal wording, Tier-1 keys, gh re-auth, disk watch (fwber growth).
 
