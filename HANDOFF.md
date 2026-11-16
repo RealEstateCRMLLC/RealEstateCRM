@@ -1,3 +1,6 @@
+## v0.66.5 - Disk cleanup (2026-11-15, Muse Code lane)
+Old backups pruned (newest/app kept incl. todays ercm), 85->84%. fwber 6.9G is the growth source (other lane). Prod healthy. Open: proposal wording, Tier-1 keys, gh re-auth.
+
 ## v0.66.4 - Steady-state loop (2026-11-15, Muse Code lane)
 Prod v0.66.3 healthy post-deploy (14 PM2, logs clean). Disk 85% trending up - flagged. Open: proposal wording, Tier-1 keys, gh re-auth. Local servers OFF.
 

@@ -1,3 +1,8 @@
+## v0.66.5 (2026-11-15)
+
+### Hetzner disk cleanup (docs)
+- Pruned stale rollback dirs keeping newest per app (ercm 1794826859 kept; removed 2x324M ercm, 121M legacyleads-api, misc small): disk 85% -> 84%. Main consumer is /var/www/fwber 6.9G (other lane - untouched). Prod re-verified: 14 PM2 online, / 200. Docs-only; prod app v0.66.3.
+
 ## v0.66.4 (2026-11-15)
 
 ### Steady-state + log watch (docs)
