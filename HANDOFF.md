@@ -1,3 +1,6 @@
+## v0.66.3 DEPLOYED to Hetzner (2026-11-15, Muse Code lane)
+Owner said deploy: built BelowNormal (19.4s), packaged deploy-v3.tar.gz (113.4 MB, 4051 files, MD5 d887743fa2450919b0ada94b75084b3c local==remote, 0 bad files), swap-safe.sh backup /tmp/ercm-backup-1794826859, BEFORE 0.66.2 -> AFTER 0.66.3, prisma/dev.db 565248 bytes preserved, AUTH_SESSION_HTTP 200. verify-live-prod ALL PASSED; live credential test: admin123 now HTTP 401, session {}. Hardcoded-admin hole closed in production.
+
 ## v0.66.3 - Hardcoded admin credential removed (2026-11-15, Muse Code lane)
 Caught up from Antigravity 8e716423 (v0.66.2 shipped/deployed/pushed; session ended mid auth-audit). Completed its audit finding: hardcoded universal-admin OWNER login env-gated (AUTH_UNIVERSAL_ADMIN_PASSWORD), guard test 2/2, eslint clean. Prod still v0.66.2 - deploy pending owner word. Local servers OFF.
 
