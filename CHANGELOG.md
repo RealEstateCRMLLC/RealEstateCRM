@@ -1,3 +1,8 @@
+## v0.66.8 (2026-11-16)
+
+### Proposal wording approved (docs)
+- Owner approved Bobbi's Hank pilot proposal wording (60-day, $500 setup + $500/mo, United Beats LLC). Bobbi notified via CDP; Hank signature is next on her side. Docs-only; prod app v0.66.3.
+
 ## v0.66.7 (2026-11-16)
 
 ### Catch-up + redundant branch cleanup (docs)
