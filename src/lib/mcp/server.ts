@@ -8,6 +8,7 @@
  */
 
 import prisma from '@/lib/prisma';
+import { rankTools, matchSiblings } from './tool-catalog';
 
 export const MCP_PROTOCOL_VERSION = '2024-11-05';
 export const SERVER_NAME = 'agentcore-crm';
@@ -34,6 +35,7 @@ export const MCP_TOOLS: MCPToolDefinition[] = [
   { name: 'summarize_workspace', description: 'Get workspace summary statistics.', inputSchema: { type: 'object', properties: {} } },
   { name: 'search_contacts', description: 'Search contacts by free-text query.', inputSchema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
   { name: 'log_activity', description: 'Log an activity against a lead.', inputSchema: { type: 'object', properties: { leadId: { type: 'string' }, type: { type: 'string' }, description: { type: 'string' } }, required: ['description'] } },
+  { name: 'find_tools', description: 'Discover which tool (on this server or a sibling CRM server) fits a job, e.g. "call a lead", "move a lead stage", "summarize my brokerage". Returns ranked local tools plus sibling-server pointers (endpoint, transport, auth). Read-only discovery - start here when unsure which tool to call.', inputSchema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
 ];
 
 type ToolExecutor = (session: MCPSession, args: Record<string, unknown>) => Promise<unknown>;
@@ -91,6 +93,28 @@ const executors: Record<string, ToolExecutor> = {
   },
   async log_activity(session, args) {
     return prisma.activity.create({ data: { type: (args['type'] as string) || 'NOTE', content: args['description'] as string, userId: session.userId, workspaceId: session.workspaceId, leadId: (args['leadId'] as string) || null } });
+  },
+  async find_tools(_session, args) {
+    const query = (args['query'] as string) || '';
+    const local = rankTools(query, MCP_TOOLS.filter((t) => t.name !== 'find_tools'))
+      .slice(0, 5)
+      .map((r) => ({ server: SERVER_NAME, tool: r.tool.name, description: r.tool.description, score: r.score }));
+    const siblings = matchSiblings(query).map((s) => ({
+      server: s.server,
+      endpoint: s.endpoint,
+      transport: s.transport,
+      auth: s.auth,
+      tools: s.tools,
+      note: s.note,
+    }));
+    return {
+      query,
+      matches: local,
+      siblingServers: siblings,
+      hint: siblings.length > 0
+        ? 'A sibling CRM server holds the specialized tools for this job - connect there next.'
+        : 'Local matches above run on this server with your current token/session.',
+    };
   },
 };
 

@@ -1,3 +1,8 @@
+## v0.67.18 (2026-11-16)
+
+### find_tools — cross-server tool discovery
+- Main MCP server gains `find_tools`: ask in plain words ("call a lead", "summarize my brokerage") and get ranked local tools plus pointers to the sibling server that holds the specialized ones (endpoint, transport, auth). Verified live through a per-user token. 81 tests pass.
+
 ## v0.67.17 (2026-11-16)
 
 ### AgentCore interpreted intents execute for real
