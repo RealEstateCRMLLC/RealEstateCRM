@@ -95,6 +95,9 @@
 - [x] RAG Consolidation: Refactor overlapping logic in `src/lib/rag.ts` and `src/lib/rag-sync.ts`.
 - [x] **AI Tool Calling:** Integrate `@ai-sdk/react` function calling to execute CRM actions (Lead routing, Task creation, Segments management).
 - [x] **AI Drip Execution:** Connect Twilio/SendGrid for automated SMS/Email dispatching led by Gemini.
+- [ ] **RAG context staleness (found v0.67.21):** `buildChatContext` summary counts disagree with the DB (context said leads=8, live count is 17). Find why the injected snapshot lags (cached summary vs live count) and make counts live or clearly dated.
+- [ ] **ContentPlanner real login (owner):** CP has no working prod login — needs a GitHub OAuth app (`GITHUB_ID`/`GITHUB_SECRET` in CP `.env`) or a password system (`User.passwordHash` + register flow). Login page is honest about it since v0.67.21.
+- [ ] **Real OpenAI key (owner Tier-1):** vault `openai` row is a dev fixture (`test-key-123`, undecryptable in prod). Re-save a real key in Settings → AI Models, then switch Active Provider back from DeepSeek if desired.
 
 ## Tech Debt & Improvements
 - [x] Evaluate Drizzle ORM for edge compatibility (See docs/DRIZZLE_EVALUATION.md).

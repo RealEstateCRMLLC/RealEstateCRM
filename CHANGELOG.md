@@ -1,3 +1,12 @@
+## v0.67.21 (2026-11-17)
+
+### BYO-AI chat + voice surfaces made real (and one silent downgrade exposed)
+- **Security:** `/api/agentcore/voice-command` answered unauthenticated requests with lead names/phone numbers. It now resolves workspace+user from the NextAuth session (`requireWorkspaceAccess`); verified live: unauthenticated 401, authenticated 200 with real data. Its parser also routes "show me the report" to the report instead of search.
+- **Dashboard AI chat rebuilt on the active provider.** It was hardwired to DeepSeek through a version-skewed AI SDK stack that 500'd in prod (`toAIStreamResponse is not a function`, then `Unhandled chunk type: response-metadata`). It now speaks the OpenAI-compatible Chat Completions API via `getActiveChatEndpoint()` (OpenAI/DeepSeek/Qwen/Gemini), executes its 7 CRM tools server-side in a bounded 3-round loop, and streams text in the format the client parses. Verified live: `getLeadCount` returned the true 17; `createTask` created a real task.
+- **Silent provider downgrade exposed and fixed.** The stored "OpenAI" vault key was a dev fixture (`test-key-123`) encrypted under the dev fallback secret, so prod decryption failed and every "OpenAI active" completion silently ran DeepSeek. The vault now logs decrypt failures, and the chat returns an explicit 503 ("re-save the key") when the selected provider's key cannot load. Active Provider switched to DeepSeek (env key) — the only provider with a working key today; a real OpenAI key re-save + switch-back is an owner Tier-1 item.
+- **ContentPlanner login honesty.** Prod has no working CP login (GitHub OAuth unconfigured, credentials fail-closed by design), yet the page offered a dead GitHub button with a callback that bounced to the main CRM. The page now detects configured providers and says so plainly, with a link back to the main dashboard; callbacks keep the `/contentplanner` mount.
+- All `deploy/*.sh` converted CRLF→LF (+ `.gitattributes` pinning `*.sh eol=lf`) — CRLF had broken `deploy-contentplanner.sh` on the server. 88 tests pass, verify-live-prod ALL PASSED.
+
 ## v0.67.20 (2026-11-16)
 
 ### CRM servers registered in HyperNexus (docs)

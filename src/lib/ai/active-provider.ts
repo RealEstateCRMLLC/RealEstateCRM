@@ -24,11 +24,21 @@ export interface ActiveProvider {
 }
 
 async function vaultKeyFor(provider: string): Promise<string | null> {
+  let record;
   try {
-    const record = await prisma.apiKey.findUnique({ where: { provider } });
-    if (!record) return null;
+    record = await prisma.apiKey.findUnique({ where: { provider } });
+  } catch {
+    return null;
+  }
+  if (!record) return null;
+  try {
     return decrypt(record.key);
   } catch {
+    // A stored key that cannot be decrypted (e.g. saved under a
+    // rotated ENCRYPTION_SECRET, or a dev-seeded fixture) must not
+    // silently read as "no key configured" — that made prod report
+    // OpenAI active while every completion quietly ran DeepSeek.
+    console.error(`[ai] stored ${provider} key could not be decrypted; re-save it in Settings → AI Models`);
     return null;
   }
 }
@@ -77,14 +87,28 @@ const CHAT_BASE_URLS: Record<string, string> = {
   gemini: 'https://generativelanguage.googleapis.com/v1beta/openai/',
 };
 
-export async function getActiveChatEndpoint(): Promise<
-  { provider: string; model: string; apiKey: string; baseUrl: string } | null
-> {
+export type ActiveChatEndpoint =
+  | { endpoint: { provider: string; model: string; apiKey: string; baseUrl: string }; reason: 'ok' }
+  | { endpoint: null; reason: 'anthropic'; provider: string }
+  | { endpoint: null; reason: 'no-key'; provider: string }
+  | { endpoint: null; reason: 'unconfigured' };
+
+export async function getActiveChatEndpoint(): Promise<ActiveChatEndpoint> {
+  const setting = await getAiProviderSetting();
   const active = await getActiveProvider();
-  if (!active) return null;
+  if (!active) {
+    // An explicit Settings choice whose key cannot be loaded is a
+    // configuration error the user must see, not a silent downgrade.
+    return setting
+      ? { endpoint: null, reason: 'no-key', provider: setting.provider }
+      : { endpoint: null, reason: 'unconfigured' };
+  }
   const baseUrl = CHAT_BASE_URLS[active.provider];
-  if (!baseUrl) return null;
-  return { provider: active.provider, model: active.model, apiKey: active.apiKey, baseUrl };
+  if (!baseUrl) return { endpoint: null, reason: 'anthropic', provider: active.provider };
+  return {
+    endpoint: { provider: active.provider, model: active.model, apiKey: active.apiKey, baseUrl },
+    reason: 'ok',
+  };
 }
 
 /**

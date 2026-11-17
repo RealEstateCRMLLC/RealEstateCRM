@@ -193,9 +193,22 @@ export async function POST(req: Request) {
     { type: 'function', function: { name: 'explainFeature', description: 'Provide an explanation of how a specific CRM feature works.', parameters: { type: 'object', properties: { feature: { type: 'string', enum: ['SEGMENTS', 'WORKFLOWS', 'SYNC_QUEUE', 'INTELLIGENCE', 'DEAL_HUB'] } }, required: ['feature'] } } },
   ];
 
-  const endpoint = await getActiveChatEndpoint();
+  const resolved = await getActiveChatEndpoint();
+  const endpoint = resolved.endpoint;
 
-  // Anthropic (not Chat-Completions-shaped) or unresolvable endpoint:
+  // The user explicitly picked a provider whose stored key cannot be
+  // loaded (undecryptable or missing): say so plainly instead of
+  // silently answering with a different provider.
+  if (resolved.reason === 'no-key') {
+    return new Response(
+      JSON.stringify({
+        error: `Your selected AI provider (${resolved.provider}) is chosen in Settings → AI Models, but its stored API key could not be loaded. Re-save the key there, or switch the Active Provider to one with a working key.`,
+      }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+
+  // Anthropic (not Chat-Completions-shaped) or nothing configured:
   // plain completion through the shared resolver, tools unavailable.
   if (!endpoint) {
     const fallback = await completeWithActiveProvider({
