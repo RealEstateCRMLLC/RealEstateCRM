@@ -1,3 +1,10 @@
+## v0.67.23 (2026-11-17)
+
+### Settings key health: unreadable keys are labeled, and cannot be activated
+- The AI Models panel happily listed OpenAI as configured even though its stored key is a dev fixture that prod cannot decrypt. `GET /api/ai/provider-setting` now reports per-provider `keyHealth` (decrypt probe; key material never leaves the server), the provider select labels it "OpenAI (key unreadable — re-save below)", and the switch endpoint refuses to activate an unreadable key with a plain re-save instruction. Verified live: switch attempt → 400 with that message; the active provider stayed DeepSeek.
+- "Test Connection" no longer rubber-stamps: the probe budget rose from 16 to 512 tokens (reasoning models were truncating the marker and "passing" with reasoning fragments) and the endpoint now verifies the `provider-ok` marker (whitespace-tolerant) before reporting success. Verified live: `{"ok":true,"reply":"provider-ok"}` from DeepSeek.
+- Full dashboard sweep this pass: all 36 sections render with zero console errors and zero 5xx; lead/deal detail pages hydrate cleanly (the old PM2 InvariantError noise does not reproduce on the current build); calendar renders; all 8 settings tabs verified.
+
 ## v0.67.22 (2026-11-17)
 
 ### RAG counts made true + the fake workflows assistant made real

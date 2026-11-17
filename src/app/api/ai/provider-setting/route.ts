@@ -105,7 +105,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: 'No active provider could complete (check keys / provider selection)' }, { status: 502 });
     }
     const trimmed = reply.trim().slice(0, 120);
-    if (!trimmed.toLowerCase().includes('provider-ok')) {
+    // Models may line-wrap the marker ("provider-\nok"); compare with
+    // whitespace removed so formatting does not fail a healthy probe.
+    if (!trimmed.toLowerCase().replace(/\s+/g, '').includes('provider-ok')) {
       return NextResponse.json(
         { ok: false, error: 'The active provider answered but did not return the expected marker.', reply: trimmed },
         { status: 502 },

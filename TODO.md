@@ -99,7 +99,7 @@
 - [x] **Duplicate workflows surfaces (resolved v0.67.22 follow-up):** not two implementations after all — `/dashboard/workflows/<slug>` were already redirect stubs into the real `/workflows/<slug>` pages. The only true duplicate (a second index) was removed: bare `/workflows` now redirects to the canonical `/dashboard/workflows` index. All five redirects pinned in `tests/consolidation.test.mts`; chain browser-verified.
 - [ ] **ContentPlanner real login (owner):** CP has no working prod login — needs a GitHub OAuth app (`GITHUB_ID`/`GITHUB_SECRET` in CP `.env`) or a password system (`User.passwordHash` + register flow). Login page is honest about it since v0.67.21.
 - [ ] **ContentPlanner nav links leave the mount:** CP sidebar/RSC links are root-absolute (`/dashboard`, `/content`, ...) so under `/contentplanner` they hit the main CRM and 500. Needs mount-aware hrefs (or a real `basePath` pass) across CP's nav + Link usage.
-- [ ] **Real OpenAI key (owner Tier-1):** vault `openai` row is a dev fixture (`test-key-123`, undecryptable in prod). Re-save a real key in Settings → AI Models, then switch Active Provider back from DeepSeek if desired.
+- [ ] **Real OpenAI key (owner Tier-1):** vault `openai` row is a dev fixture (`test-key-123`, undecryptable in prod). Since v0.67.23 the Settings panel labels it "key unreadable — re-save below" and refuses to activate it. Owner: re-save a real key in Settings → AI Models, then switch Active Provider back from DeepSeek if desired.
 
 ## Tech Debt & Improvements
 - [x] Evaluate Drizzle ORM for edge compatibility (See docs/DRIZZLE_EVALUATION.md).
