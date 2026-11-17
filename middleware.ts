@@ -41,7 +41,14 @@ export default async function middleware(req: NextRequest) {
       // post-login redirects to 0.0.0.0:3210. Relative paths are host-agnostic
       // and NextAuth resolves them against the public origin.
       signInUrl.searchParams.set('callbackUrl', url.pathname + url.search);
-      return NextResponse.redirect(signInUrl);
+      const res = NextResponse.redirect(signInUrl);
+      // Break stale-cookie loops (secret rotation): clear unverifiable
+      // session cookies so the next login is not shadowed by the old one.
+      if (req.cookies.has('next-auth.session-token') || req.cookies.has('__Secure-next-auth.session-token')) {
+        res.cookies.delete('next-auth.session-token');
+        res.cookies.delete('__Secure-next-auth.session-token');
+      }
+      return res;
     }
   }
 
