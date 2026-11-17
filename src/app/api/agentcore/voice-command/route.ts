@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
 
 /**
  * AgentCore Mobile Voice Commands
@@ -14,14 +16,28 @@ export async function POST(request: NextRequest) {
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
-  const { command, workspaceId, userId } = body;
+  const { command } = body;
 
   if (!command) {
     return NextResponse.json({ error: 'command required' }, { status: 400 });
   }
 
+  // SECURITY: this endpoint returns lead names and phone numbers, so it
+  // must never trust a caller-supplied workspaceId/userId. Resolve both
+  // from the authenticated session exactly like /api/chat does; an
+  // unauthenticated caller gets 401 and no lead data.
+  const session = await getServerSession(authOptions);
+  let access;
+  try {
+    access = await requireWorkspaceAccess(session);
+  } catch (e) {
+    const mapped = workspaceErrorResponse(e);
+    if (mapped) return mapped;
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const parsed = parseCommand(command);
-  const result = await executeCommand(parsed, workspaceId || DEFAULT_WORKSPACE_SLUG, userId);
+  const result = await executeCommand(parsed, access.workspaceId, access.userId);
 
   return NextResponse.json({
     command,
@@ -72,6 +88,12 @@ function parseCommand(command: string): ParsedCommand {
     return { action: 'START_CALL', target: 'leads', filter: { status: 'HOT' }, message: '', confidence };
   }
 
+  // Report commands (checked before search: "show me the report" is a
+  // report request, and the generic 'show' branch would swallow it)
+  if (lower.includes('report') || lower.includes('stats') || lower.includes('analytics')) {
+    return { action: 'SHOW_REPORT', target: 'dashboard', filter: {}, message: '', confidence };
+  }
+
   // Search commands
   if (lower.includes('show') || lower.includes('find') || lower.includes('search') || lower.includes('list')) {
     const filter: Record<string, string> = {};
@@ -87,11 +109,6 @@ function parseCommand(command: string): ParsedCommand {
     if (lower.includes('lead')) return { action: 'CREATE_LEAD', target: 'lead', filter: {}, message: '', confidence };
     if (lower.includes('task') || lower.includes('reminder')) return { action: 'CREATE_TASK', target: 'task', filter: {}, message: '', confidence };
     return { action: 'CREATE', target: 'unknown', filter: {}, message: '', confidence: 0.5 };
-  }
-
-  // Report commands
-  if (lower.includes('report') || lower.includes('stats') || lower.includes('analytics')) {
-    return { action: 'SHOW_REPORT', target: 'dashboard', filter: {}, message: '', confidence };
   }
 
   return { action: 'UNKNOWN', target: 'unknown', filter: {}, message: command, confidence: 0.3 };

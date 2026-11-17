@@ -19,7 +19,7 @@ export default function AIChat() {
       {
         id: '1',
         role: 'assistant',
-        content: 'Hello! I am Gemini, your real estate AI assistant. How can I help you dominate your market today?',
+        content: 'Hello! I am your real estate AI assistant, running on the provider selected in Settings → AI Models. How can I help you dominate your market today?',
       },
     ],
   });

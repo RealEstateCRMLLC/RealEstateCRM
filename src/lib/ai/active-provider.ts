@@ -12,13 +12,15 @@ import prisma from '@/lib/prisma';
 import { decrypt } from '@/lib/encryption';
 import { createProviderClient, type ProviderClient } from './llm-providers';
 import { getAiProviderSetting, pickProvider, DEFAULT_MODELS } from './provider-settings';
-import { deepSeekCompletion, DEEPSEEK_MODEL } from './deepseek';
+import { deepSeekCompletion, DEEPSEEK_MODEL, DEEPSEEK_BASE_URL } from './deepseek';
 
 export interface ActiveProvider {
   client: ProviderClient;
   provider: string;
   model: string;
   source: 'setting' | 'env' | 'vault' | 'none';
+  /** Resolved API key (server-only; never serialize into a response). */
+  apiKey: string;
 }
 
 async function vaultKeyFor(provider: string): Promise<string | null> {
@@ -51,7 +53,38 @@ export async function getActiveProvider(): Promise<ActiveProvider | null> {
     provider: choice.provider,
     model: choice.model,
     source: choice.source,
+    apiKey: key,
   };
+}
+
+/**
+ * OpenAI-compatible chat endpoint for the dashboard chat (/api/chat),
+ * resolved from the SAME active-provider choice as every other call
+ * site — the chat follows the Settings provider switch, it does not
+ * stay hardwired to DeepSeek. The route speaks the Chat Completions
+ * API directly because the installed AI SDK packages are mutually
+ * incompatible (ai@3.1 core rejects @ai-sdk/openai@1.3 stream parts —
+ * "Unhandled chunk type: response-metadata"), while the raw HTTP
+ * contract is stable across OpenAI, DeepSeek, Qwen, and Gemini's
+ * OpenAI-compatible endpoint. Anthropic's Messages API is not
+ * Chat-Completions-shaped, so it returns null here and the route
+ * falls back to a plain completion via completeWithActiveProvider.
+ */
+const CHAT_BASE_URLS: Record<string, string> = {
+  openai: 'https://api.openai.com/v1',
+  deepseek: DEEPSEEK_BASE_URL,
+  qwen: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  gemini: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+};
+
+export async function getActiveChatEndpoint(): Promise<
+  { provider: string; model: string; apiKey: string; baseUrl: string } | null
+> {
+  const active = await getActiveProvider();
+  if (!active) return null;
+  const baseUrl = CHAT_BASE_URLS[active.provider];
+  if (!baseUrl) return null;
+  return { provider: active.provider, model: active.model, apiKey: active.apiKey, baseUrl };
 }
 
 /**
