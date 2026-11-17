@@ -7,6 +7,7 @@
 - **`/workflows` hub:** the bare path 404'd despite having a layout and four subroutes; it now lands on a hub page linking the four workflows.
 - **Full MCP battery re-run after all changes:** main 11 tools (unauth 401, unknown tool clean error, `list_all_tools` fan-out live), aicrm 12 (test-tenant contact read), LeadCaller 5 (unauth 401, 2 callable test leads), kernel search (`?query=`) ranks LeadCaller #1 for "call a lead". aicrm's hypernexus_* tools still return [] from Hetzner (kernel is laptop-side, by topology).
 - Filed: duplicate `/workflows/*` vs `/dashboard/workflows/*` surfaces to consolidate. 90 tests pass, verify-live-prod ALL PASSED.
+- **Follow-up (same day): workflows consolidation completed.** The dashboard subpages were already redirect stubs into the real implementations; the only true duplicate was the second index. Bare `/workflows` now redirects to `/dashboard/workflows`; all five redirect stubs are pinned in the consolidation test (95 pass) and the full chain (login → /workflows → dashboard index → card → implementation) is browser-verified.
 
 ## v0.67.21 (2026-11-17)
 

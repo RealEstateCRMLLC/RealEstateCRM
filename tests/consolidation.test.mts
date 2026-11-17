@@ -46,6 +46,21 @@ test('team chat route redirects into the unified inbox', () => {
   assert.doesNotMatch(nav, /href: '\/dashboard\/chat'/, 'sidebar must not carry the duplicate chat item');
 });
 
+const WORKFLOW_SLUGS = ['foreclosure-intake', 'listing-entry', 'marketing-media', 'offer-draft'];
+
+for (const slug of WORKFLOW_SLUGS) {
+  test(`dashboard/workflows/${slug} redirects to the canonical implementation`, () => {
+    const src = read(`src/app/dashboard/workflows/${slug}/page.tsx`);
+    assert.match(src, /redirect\(/, 'dashboard subpage must redirect, not duplicate the implementation');
+    assert.match(src, new RegExp(`/workflows/${slug}`), `must target /workflows/${slug}`);
+  });
+}
+
+test('bare /workflows redirects to the dashboard workflows index', () => {
+  const src = read('src/app/workflows/page.tsx');
+  assert.match(src, /redirect\('\/dashboard\/workflows'\)/, 'the workflows index is consolidated under /dashboard');
+});
+
 test('leadg middleware is a getToken guard with mount-aware login redirect', () => {
   const src = read('apps/leadg/src/middleware.ts');
   assert.doesNotMatch(src, /next-auth\/middleware|withAuth\(\{/, 'withAuth is inert in this stack and must not be used');
