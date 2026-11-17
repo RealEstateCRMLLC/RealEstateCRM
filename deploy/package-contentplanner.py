@@ -7,6 +7,14 @@ if not os.path.isfile(os.path.join(standalone_root, 'server.js')):
     standalone_root = os.path.join(base, '.next/standalone')
 
 print(f'Standalone root: {standalone_root}')
+
+# Hard guard: never package a stub. A failed `next build` leaves a partial
+# standalone tree; shipping it took the mount down (2026-11-17). Refuse.
+if not os.path.isfile(os.path.join(standalone_root, 'server.js')):
+    raise SystemExit(f'ABORT: no server.js under {standalone_root} - did the build succeed?')
+if not os.path.isfile(os.path.join(base, '.next/BUILD_ID')):
+    raise SystemExit('ABORT: no .next/BUILD_ID - build output incomplete, not packaging.')
+
 tf = tarfile.open('deploy-contentplanner.tar.gz', 'w:gz')
 count = 0
 
