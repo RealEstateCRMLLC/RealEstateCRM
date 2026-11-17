@@ -1,3 +1,8 @@
+## v0.67.3 (2026-11-16)
+
+### Loop pass 5 - interaction & API verification (docs)
+- Verified: sign-out lifecycle, CommandCenter filter (incl. empty state), offer-draft form, client portal, reporting/health/listings APIs. Pruned own old Hetzner backups (85%, 12G free). No code changes.
+
 ## v0.67.2 (2026-11-16)
 
 ### SECURITY: aicrm auth guard activated (was fully public)
