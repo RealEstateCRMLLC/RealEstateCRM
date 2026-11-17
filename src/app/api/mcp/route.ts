@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { handleMCPRequest } from '@/lib/mcp/server';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
 import prisma from '@/lib/prisma';
+import { verifyUserToken } from '@/lib/mcp/user-tokens';
 
 /**
  * AgentCore MCP endpoint.
@@ -21,16 +22,32 @@ export async function POST(request: NextRequest) {
 
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
-    const expected = process.env.MCP_TOKEN;
-    if (!expected || token !== expected) {
-      return NextResponse.json({ jsonrpc: '2.0', id: null, error: { code: -32001, message: 'Invalid MCP token' } }, { status: 401 });
+
+    // Per-user token first: the AI acts strictly as that realtor
+    // (their workspace, their permissions - Phase 18 BYO-AI).
+    const userToken = await verifyUserToken(token);
+    if (userToken) {
+      const workspace = await prisma.workspace.findFirst({
+        where: { members: { some: { userId: userToken.userId } } },
+        select: { id: true },
+      });
+      if (!workspace) {
+        return NextResponse.json({ jsonrpc: '2.0', id: null, error: { code: -32001, message: 'No workspace found' } }, { status: 404 });
+      }
+      session = { workspaceId: workspace.id, userId: userToken.userId };
+    } else {
+      // Workspace service token (env) - kept for server-to-server callers.
+      const expected = process.env.MCP_TOKEN;
+      if (!expected || token !== expected) {
+        return NextResponse.json({ jsonrpc: '2.0', id: null, error: { code: -32001, message: 'Invalid MCP token' } }, { status: 401 });
+      }
+      const firstUser = await prisma.user.findFirst({ select: { id: true } });
+      const firstWorkspace = await prisma.workspace.findFirst({ select: { id: true } });
+      if (!firstUser || !firstWorkspace) {
+        return NextResponse.json({ jsonrpc: '2.0', id: null, error: { code: -32001, message: 'No workspace found' } }, { status: 404 });
+      }
+      session = { workspaceId: firstWorkspace.id, userId: firstUser.id };
     }
-    const firstUser = await prisma.user.findFirst({ select: { id: true } });
-    const firstWorkspace = await prisma.workspace.findFirst({ select: { id: true } });
-    if (!firstUser || !firstWorkspace) {
-      return NextResponse.json({ jsonrpc: '2.0', id: null, error: { code: -32001, message: 'No workspace found' } }, { status: 404 });
-    }
-    session = { workspaceId: firstWorkspace.id, userId: firstUser.id };
   } else {
     const authSession = await getServerSession(authOptions);
     if (!authSession?.user) {

@@ -1,3 +1,8 @@
+## v0.67.13 (2026-11-16)
+
+### Per-user MCP tokens (BYO-AI identity)
+- Settings → MCP Server: "Connect Your Own AI" — generate/rotate/revoke a personal `recm_` token (shown once, stored as SHA-256 hash only). The MCP endpoint accepts it as Bearer and runs every tool strictly as that user in their workspace; the env service token remains as fallback. Full lifecycle verified live (generate → Bearer-only calls → revoke → 401). 74 tests pass.
+
 ## v0.67.12 (2026-11-16)
 
 ### Full MCP tool matrix verified (docs)
