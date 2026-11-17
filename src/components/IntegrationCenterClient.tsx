@@ -149,8 +149,6 @@ export default function IntegrationCenterClient({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto text-foreground p-6">
-      <div className="flex items-center mb-4"><h1 className="text-xl font-semibold">Integration Center</h1> <span title="Connect third-party services including CRM systems, marketing tools, and communication platforms. Manage API keys and sync settings." aria-label="About this section: Connect third-party services including CRM systems, marketing tools, and communication platforms. Manage API keys and sync settings." className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border text-[9px] text-muted-foreground cursor-help ml-2 align-middle">?</span></div>
-      
       {/* Banner Notice Alert */}
       <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -169,7 +167,7 @@ export default function IntegrationCenterClient({
 
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-black tracking-tight text-foreground">Integration Center</h1>
+        <h1 className="text-3xl font-black tracking-tight text-foreground">Integration Center <span title="Connect third-party services including CRM systems, marketing tools, and communication platforms. Manage API keys and sync settings." aria-label="About this section: Connect third-party services including CRM systems, marketing tools, and communication platforms. Manage API keys and sync settings." className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border text-[9px] text-muted-foreground cursor-help ml-2 align-middle">?</span></h1>
         <p className="text-xs text-muted-foreground font-semibold mt-1">Connect third-party real estate platforms, MLS data feeds, and CRM tools.</p>
       </div>
 

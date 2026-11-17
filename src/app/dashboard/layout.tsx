@@ -20,6 +20,7 @@ import { startSyncScheduler } from '@/lib/sync-scheduler';
 import LeadAlertListener from '@/components/LeadAlertListener';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import SidebarNav from '@/components/dashboard/SidebarNav';
+import MobileNav from '@/components/dashboard/MobileNav';
 import { getWorkspaceBranding, DEFAULT_BRANDING } from '@/lib/branding';
 import { resolveUniversalTenant } from '@/lib/universal/tenant';
 import { getStoredTenantRecord } from '@/lib/universal/tenant-store';
@@ -120,6 +121,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="h-16 border-b border-border bg-background flex items-center justify-between px-3 sm:px-6 sticky top-0 z-10">
           <div className="md:hidden flex items-center gap-2">
+            <MobileNav />
             <div
               className="w-6 h-6 rounded-sm bg-secondary flex items-center justify-center font-bold text-secondary-foreground text-xs"
               style={brandAccent ? { backgroundColor: brandAccent, color: '#0a0a0a' } : undefined}

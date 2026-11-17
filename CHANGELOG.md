@@ -1,3 +1,9 @@
+## v0.67.0 (2026-11-16)
+
+### Loop pass 2 - mobile nav, settings dedup, webhook hardening
+- New MobileNav (hamburger + SidebarNav drawer) verified in browser (47 links, auto-close). Settings duplicate heading removed; 11 tabs + MLS fields verified.
+- Foreclosure voice webhook: 400 on malformed callbacks (was 500). aicrm 408 transient (4/4 healthy). Deployed; verify-live-prod ALL PASSED.
+
 ## v0.66.9 (2026-11-16)
 
 ### Exhaustive browser test pass - 3 production defects fixed & deployed
