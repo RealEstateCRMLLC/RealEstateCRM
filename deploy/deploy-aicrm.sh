@@ -59,6 +59,13 @@ if [ ! -s prisma/dev.db ] && [ -s "$BK/prisma/dev.db" ]; then
   cp "$BK/prisma/dev.db" prisma/dev.db
 fi
 
+# Prisma's libsql adapter needs the Linux native binary (@libsql/linux-x64-gnu);
+# standalone builds packaged on Windows ship only the win32 binary and every
+# libsql-backed route 500s with MODULE_NOT_FOUND. Install it if absent.
+if [ ! -d node_modules/@libsql/linux-x64-gnu ]; then
+  npm install --no-save --no-package-lock --ignore-scripts @libsql/linux-x64-gnu 2>&1 | tail -1 || true
+fi
+
 pm2 delete aicrm 2>/dev/null || true
 PORT=3218 pm2 start server.js --name aicrm --cwd "$DEPLOY_DIR"
 pm2 save

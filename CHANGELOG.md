@@ -1,3 +1,11 @@
+## v0.67.6 (2026-11-16)
+
+### Sub-app auth saga closed + aicrm register/MCP repaired + LC MCP unblocked
+- Foreclosure login bounce root-caused: its SessionProvider called the main CRM's `/api/auth/session`, deleting the foreclosure session cookie. `basePath="/foreclosure/api/auth"` (fc c7165c3) + regression test; full authenticated tour passes. Sign-in redirects now keep the mount prefix; stale session cookies are expired on both cookie paths (fc/lc/main).
+- aicrm: registration 500 fixed (create Tenant before Brokerage, ada3d61); MCP 500 fixed (missing Linux libsql binary; deploy script self-heals); MCP tool executors aligned to the real schema (tenantId scoping, 97df985). MCP verified end-to-end (12 tools, CRUD + summarize 200). Regression tests added (52 pass).
+- LeadCaller MCP SSE was swallowed by nginx proxy buffering: patched live + `deploy/add-leadcaller-nginx.sh`; handshake/initialize/tools-list flow through the domain.
+- Test users `loop-test@` created in foreclosure/leadcaller/aicrm (passwords only in laptop Temp).
+
 ## v0.67.5 (2026-11-16)
 
 ### Loop pass 6 - live prod deep interactions (docs)
