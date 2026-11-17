@@ -1,3 +1,8 @@
+## v0.67.5 (2026-11-16)
+
+### Loop pass 6 - live prod deep interactions (docs)
+- On prod only: CSV export (real 18-row download), calculator live recompute, MLS form, mobile nav (drawer -> Listings -> close), branded 404, auth matrices (401/307 across sub-apps). Zero console errors, no code changes.
+
 ## v0.67.4 (2026-11-16)
 
 ### Owner rule: live-only testing + calendar hydration fix
