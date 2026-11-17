@@ -246,9 +246,21 @@ export default function WebsitesClient({
         <div className="flex-1 overflow-y-auto px-2 space-y-1 py-2">
           <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider px-3 block mb-2">History & Recents</span>
           {filteredPages.map(page => (
-            <button type="button"
+            // Row must be a div, not a <button>: it contains Duplicate/Delete
+            // <button> children, and nested buttons are invalid HTML - the
+            // parser auto-closes the outer button, so the hydrated DOM never
+            // matches the server HTML (React #418 on this page).
+            <div
               key={page.id}
+              role="button"
+              tabIndex={0}
               onClick={() => handleEditPage(page)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleEditPage(page);
+                }
+              }}
               className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between group cursor-pointer ${
                 editingPageId === page.id
                   ? 'bg-primary/10 text-primary border border-primary/20'
@@ -277,7 +289,7 @@ export default function WebsitesClient({
                 </button>
                 <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
               </div>
-            </button>
+            </div>
           ))}
           {filteredPages.length === 0 && (
             <span className="text-[10px] text-muted-foreground italic px-3 py-4 block text-center">No matching pages</span>

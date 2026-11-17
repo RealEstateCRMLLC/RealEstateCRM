@@ -1,3 +1,9 @@
+## v0.67.9 (2026-11-16)
+
+### Team Chat create fixed + Agent Websites hydration fixed
+- Team Chat "New Chat" always 400'd: the form hardcoded `participantIds: []`. It now loads workspace members from `/api/team`, requires a selection (1 for DM, 2+ for groups), and shows errors inline. Verified live (room created, then cleaned up).
+- `/dashboard/agent-websites` threw React #418: history rows were `<button>`s nesting action `<button>`s (invalid HTML). Rows are now keyboard-accessible divs. Regression tests added for both.
+
 ## v0.67.8 (2026-11-16)
 
 ### LiveAudio console spam fixed, settings routes consolidated, LeadG auth guard

@@ -43,6 +43,9 @@ export default function TeamChat({ currentUserId }: { currentUserId: string }) {
   const [showNewChat, setShowNewChat] = useState(false);
   const [newChatName, setNewChatName] = useState('');
   const [newChatType, setNewChatType] = useState<'DIRECT' | 'GROUP'>('DIRECT');
+  const [members, setMembers] = useState<ChatUser[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [createError, setCreateError] = useState('');
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +76,35 @@ export default function TeamChat({ currentUserId }: { currentUserId: string }) {
     const interval = setInterval(loadRooms, 10_000);
     return () => clearInterval(interval);
   }, [loadRooms]);
+
+  // Load workspace members for the participant picker (excluding self).
+  useEffect(() => {
+    if (!showNewChat || members.length > 0) return;
+    (async () => {
+      try {
+        const res = await fetch('/api/team');
+        const data = await res.json();
+        const list: ChatUser[] = (data.members || [])
+          .filter((m: { userId: string }) => m.userId !== currentUserId)
+          .map((m: { userId: string; name: string | null; email: string | null }) => ({
+            id: m.userId,
+            name: m.name,
+            email: m.email,
+            image: null,
+          }));
+        setMembers(list);
+      } catch {
+        // picker stays empty; Create remains disabled
+      }
+    })();
+  }, [showNewChat, members.length, currentUserId]);
+
+  const toggleMember = (id: string) => {
+    setSelectedIds((prev) => {
+      if (newChatType === 'DIRECT') return prev.includes(id) ? [] : [id];
+      return prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+    });
+  };
 
   useEffect(() => {
     if (activeRoom) {
@@ -130,7 +162,11 @@ export default function TeamChat({ currentUserId }: { currentUserId: string }) {
         <div className="px-4 py-3 border-b border-border bg-muted/30 space-y-2">
           <select
             value={newChatType}
-            onChange={(e) => setNewChatType(e.target.value as 'DIRECT' | 'GROUP')}
+            onChange={(e) => {
+              setNewChatType(e.target.value as 'DIRECT' | 'GROUP');
+              setSelectedIds([]);
+              setCreateError('');
+            }}
             className="w-full px-3 py-1.5 text-xs border border-border rounded-lg bg-background"
           >
             <option value="DIRECT">Direct Message</option>
@@ -144,8 +180,36 @@ export default function TeamChat({ currentUserId }: { currentUserId: string }) {
               className="w-full px-3 py-1.5 text-xs border border-border rounded-lg bg-background"
             />
           )}
+          <div className="space-y-1" role="group" aria-label="Choose participants">
+            <p className="text-[11px] font-semibold text-muted-foreground">
+              {newChatType === 'DIRECT' ? 'Choose one person' : 'Choose participants'}
+            </p>
+            {members.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">No other workspace members yet - invite teammates in Settings → Team & Roles.</p>
+            ) : (
+              members.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => toggleMember(m.id)}
+                  aria-pressed={selectedIds.includes(m.id)}
+                  className={
+                    'w-full text-left px-3 py-1.5 text-xs rounded-lg border transition-colors ' +
+                    (selectedIds.includes(m.id)
+                      ? 'border-secondary bg-secondary/10 text-foreground font-semibold'
+                      : 'border-border hover:bg-muted text-muted-foreground')
+                  }
+                >
+                  {selectedIds.includes(m.id) ? '✓ ' : ''}{m.name || m.email || m.id}
+                </button>
+              ))
+            )}
+          </div>
+          {createError && <p className="text-[11px] font-semibold text-red-500">{createError}</p>}
           <button type="button"
+            disabled={selectedIds.length === 0 || (newChatType === 'GROUP' && selectedIds.length < 2)}
             onClick={async () => {
+              setCreateError('');
               try {
                 const res = await fetch('/api/chat/rooms', {
                   method: 'POST',
@@ -153,7 +217,7 @@ export default function TeamChat({ currentUserId }: { currentUserId: string }) {
                   body: JSON.stringify({
                     type: newChatType,
                     name: newChatName || undefined,
-                    participantIds: [],
+                    participantIds: selectedIds,
                   }),
                 });
                 const data = await res.json();
@@ -162,10 +226,15 @@ export default function TeamChat({ currentUserId }: { currentUserId: string }) {
                   setActiveRoom(data.room);
                   setShowNewChat(false);
                   setNewChatName('');
+                  setSelectedIds([]);
+                } else {
+                  setCreateError(data.error || 'Could not create the chat. Try again.');
                 }
-              } catch { /* network error */ }
+              } catch {
+                setCreateError('Network error - chat not created.');
+              }
             }}
-            className="w-full px-3 py-1.5 bg-secondary text-secondary-foreground text-xs font-bold rounded-lg hover:bg-secondary/90"
+            className="w-full px-3 py-1.5 bg-secondary text-secondary-foreground text-xs font-bold rounded-lg hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Create
           </button>
