@@ -1,3 +1,11 @@
+## v0.67.24 (2026-11-17)
+
+### Task creation was silently broken; approvals deciding is now guarded
+- **Add Task never worked.** The modal has no dueTime input, so `formData.get('dueTime')` is `null`; the zod schema's `.optional()` rejects null (zod v4 calls it a bare "Invalid input"), so every submit failed validation and no task was ever created. Both task write actions now normalize FormData fields to `string|undefined` before validating. Verified end-to-end in a real browser: modal submits, closes, and the task is in the database and the list. (Sibling actions audited: activity/workflow schemas are null-safe; deal actions take typed objects.)
+- **Approvals PATCH hardened.** It used to look up any activity by id (any workspace, any type), store whatever `action` string arrived uppercased as the status ("banana" → "BANANA"), and let decided approvals be flipped back and forth. It now scopes to the caller's workspace + APPROVAL activities, whitelists approve/reject into APPROVED/REJECTED, and returns 409 on an already-decided approval. Verified live: banana → 400, approve → APPROVED, re-decide → 409.
+- Write-path battery otherwise green: leads create/read-back (201), validation 400s, unauthenticated 401s, inbox shape healthy. Noted for a product call: duplicate lead creates are silently accepted (two 201s for one email) — filed, semantics unchanged.
+- 102 tests pass, verify-live-prod ALL PASSED.
+
 ## v0.67.23 (2026-11-17)
 
 ### Settings key health: unreadable keys are labeled, and cannot be activated
