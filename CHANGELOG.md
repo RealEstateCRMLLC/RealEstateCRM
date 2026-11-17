@@ -1,3 +1,9 @@
+## v0.67.19 (2026-11-16)
+
+### LeadCaller MCP auth sealed + cross-server tool fan-out
+- LeadCaller MCP was fully unauthenticated (lead names + phone numbers readable by anyone). It now requires a session cookie or `LC_MCP_TOKEN` bearer (401 verified, bearer verified).
+- New `list_all_tools` on the main MCP server live-merges aicrm's tool list via a shared sibling token (deploy-preserved on both sides), with LeadCaller by SSE pointer — one call sees all three servers. 82 tests pass.
+
 ## v0.67.18 (2026-11-16)
 
 ### find_tools — cross-server tool discovery
