@@ -50,11 +50,19 @@ export default function ApprovalsPage() {
 
   const handleAction = async (id: string, action: 'approved' | 'rejected') => {
     try {
-      await fetch('/api/approvals', {
+      const res = await fetch('/api/approvals', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, action }),
       });
+      // Never claim success on a refused decision (already decided,
+      // wrong workspace, validation): surface the API's reason.
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error || `Failed to update approval (HTTP ${res.status})`);
+        loadApprovals();
+        return;
+      }
       toast.success(`Approval ${action}`);
       loadApprovals();
     } catch {

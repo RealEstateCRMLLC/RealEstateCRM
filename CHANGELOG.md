@@ -1,3 +1,11 @@
+## v0.67.25 (2026-11-17)
+
+### Deals + campaigns write paths verified; approvals views fixed
+- **Deals UI write verified end-to-end:** New Deal modal → pipeline → detail page, with the row confirmed in the database (stage whitelist on stage moves was already in place). No code change needed.
+- **Campaign lifecycle verified end-to-end:** created a Smart Plan in the UI, applied it to a test lead from the lead page (the full 3-step drip schedule materialized with correct delays), then stopped it (pending drip tasks cleared, audit activity written). No outbound was possible: with no Twilio/Resend keys, send attempts throw before dispatch — checked in code and by design of the test (test lead, fake contacts).
+- **Approvals: the Approved/Rejected views could never show anything.** `GET /api/approvals` only returned PENDING items, so after any refresh the decided filters were permanently empty. GET now returns recent approvals in all states and the page filters client-side. Also, the page toasted "Approval approved" even when the API refused (409/400) — it now surfaces the API's reason. And the PATCH whitelist from v0.67.24 learned the dashboard's vocabulary: the UI sends `approved`/`rejected`, the API accepts verb + past-tense and stores the canonical form. Verified in a real browser: seed → approve in UI → appears under the Approved filter.
+- 103 tests pass, verify-live-prod ALL PASSED.
+
 ## v0.67.24 (2026-11-17)
 
 ### Task creation was silently broken; approvals deciding is now guarded

@@ -26,9 +26,18 @@ test('PATCH scopes the lookup to the caller workspace and APPROVAL type', () => 
 });
 
 test('PATCH whitelists the decision and stores canonical statuses', () => {
-  assert.match(patch, /decision !== 'approve' && decision !== 'reject'/);
-  assert.match(patch, /decision === 'approve' \? 'APPROVED' : 'REJECTED'/);
+  // The dashboard UI sends past-tense ('approved'/'rejected'); the API
+  // accepts verb + past-tense and stores the canonical past tense.
+  assert.match(patch, /decision !== 'approve' && decision !== 'approved'/);
+  assert.match(patch, /decision\.startsWith\('approve'\) \? 'APPROVED' : 'REJECTED'/);
   assert.doesNotMatch(patch, /action\.toUpperCase\(\)/, 'raw action must never become the stored status');
+});
+
+test('GET returns decided approvals too, and the page honors PATCH failures', () => {
+  assert.doesNotMatch(route, /contains: 'PENDING'/, 'a PENDING-only GET makes the Approved/Rejected views permanently empty');
+  const page = readFileSync(join(root, 'src/app/dashboard/approvals/page.tsx'), 'utf8');
+  assert.match(page, /if \(!res\.ok\)/, 'the page must not toast success on a refused decision');
+  assert.match(page, /data\?\.error/, 'the page must surface the API error reason');
 });
 
 test('PATCH refuses to re-decide a decided approval', () => {

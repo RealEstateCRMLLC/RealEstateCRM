@@ -24,7 +24,10 @@ export async function GET() {
     where: {
       workspaceId: workspace.id,
       type: 'APPROVAL',
-      content: { contains: 'PENDING' },
+      // No status substring filter: the page filters Pending/Approved/
+      // Rejected/All client-side, and a PENDING-only response made the
+      // decided views permanently empty after any refresh. (Substring
+      // matching also caught content merely mentioning "PENDING".)
     },
     orderBy: { createdAt: 'desc' },
     take: 50,
@@ -103,8 +106,10 @@ export async function PATCH(request: NextRequest) {
 
     // Only two decisions exist. Anything else used to be uppercased
     // straight into the stored status ("action: banana" -> "BANANA").
+    // The dashboard sends the past-tense forms ('approved'/'rejected');
+    // accept verb and past-tense, store the canonical past tense.
     const decision = typeof action === 'string' ? action.toLowerCase() : '';
-    if (decision !== 'approve' && decision !== 'reject') {
+    if (decision !== 'approve' && decision !== 'approved' && decision !== 'reject' && decision !== 'rejected') {
       return NextResponse.json({ error: 'action must be "approve" or "reject"' }, { status: 400 });
     }
 
@@ -126,7 +131,7 @@ export async function PATCH(request: NextRequest) {
         { status: 409 },
       );
     }
-    content.status = decision === 'approve' ? 'APPROVED' : 'REJECTED';
+    content.status = decision.startsWith('approve') ? 'APPROVED' : 'REJECTED';
     content.reviewedAt = new Date().toISOString();
     content.reviewedBy = session.user.id;
     if (notes) content.notes = notes;
