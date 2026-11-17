@@ -6,6 +6,7 @@
 - **Silent provider downgrade exposed and fixed.** The stored "OpenAI" vault key was a dev fixture (`test-key-123`) encrypted under the dev fallback secret, so prod decryption failed and every "OpenAI active" completion silently ran DeepSeek. The vault now logs decrypt failures, and the chat returns an explicit 503 ("re-save the key") when the selected provider's key cannot load. Active Provider switched to DeepSeek (env key) — the only provider with a working key today; a real OpenAI key re-save + switch-back is an owner Tier-1 item.
 - **ContentPlanner login honesty.** Prod has no working CP login (GitHub OAuth unconfigured, credentials fail-closed by design), yet the page offered a dead GitHub button with a callback that bounced to the main CRM. The page now detects configured providers and says so plainly, with a link back to the main dashboard; callbacks keep the `/contentplanner` mount.
 - All `deploy/*.sh` converted CRLF→LF (+ `.gitattributes` pinning `*.sh eol=lf`) — CRLF had broken `deploy-contentplanner.sh` on the server. 88 tests pass, verify-live-prod ALL PASSED.
+- **Follow-up (same day): ContentPlanner never hydrated under its mount.** Its HTML referenced `/_next/static` at the domain root (no `assetPrefix`), so every CP page 404'd its JS and rendered as a dead server shell. Added `assetPrefix: '/contentplanner'`; chunks now serve 200 under the mount and pages hydrate (login notice verified in a real browser).
 
 ## v0.67.20 (2026-11-16)
 
