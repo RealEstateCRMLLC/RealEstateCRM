@@ -1,3 +1,9 @@
+## v0.67.4 (2026-11-16)
+
+### Owner rule: live-only testing + calendar hydration fix
+- No local servers anymore: killed local dev, enabled env-gated break-glass admin on Hetzner (server .env only) and ran the full 38-route dashboard tour live on prod (38/38).
+- Fixed React #418 on /dashboard/calendar (server-clock SSR vs browser-clock hydration): date now mounts client-only. Deployed (MD5 matched); re-probe clean, verify-live-prod ALL PASSED. Loop job c20b60f1 carries the live-only rule.
+
 ## v0.67.3 (2026-11-16)
 
 ### Loop pass 5 - interaction & API verification (docs)

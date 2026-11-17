@@ -15,12 +15,18 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 export default function PublishingCalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // Client-only "now": seeding useState with new Date() renders the month
+  // with the SERVER clock during SSR, then hydration re-renders with the
+  // browser clock - near day/month boundaries that mismatch throws React
+  // #418 and flashes the wrong month. Start null, set on mount.
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [posts, setPosts] = useState<ScheduledPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  useEffect(() => { setCurrentDate(new Date()); }, []);
+
+  const year = currentDate?.getFullYear() ?? 0;
+  const month = currentDate?.getMonth() ?? 0;
 
   const loadPosts = useCallback(async () => {
     try {
@@ -53,6 +59,15 @@ export default function PublishingCalendarPage() {
   const daysInMonth = getDaysInMonth();
   const firstDay = getFirstDayOfMonth();
   const today = new Date();
+
+  if (!currentDate) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-foreground">Publishing Calendar</h1>
+        <p className="text-sm text-muted-foreground">Loading calendar…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
