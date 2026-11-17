@@ -1,5 +1,14 @@
 # MEMORY.md — realestatecrm Project Knowledge
 
+## 2026-11-16 Addendum (v0.67.x loop — supersedes stale rows below)
+- ALL 8 submodules are mounted + auth-guarded on prod (aicrm/leadcaller mounts are LIVE, not pending). Every app's auth was re-proven this cycle: inert `withAuth` (fc/lc/leadg) and dead `proxy.ts`-on-Next-15 (aicrm) all replaced with hand-written token guards; pages 307 to mount-local login, APIs 401 JSON.
+- Mount-prefix discipline: under basePath mounts, root-absolute `/api`, `/login`, or session-provider calls escape to the MAIN CRM and break (or silently kill sessions). Every sub-app has `lib/api-base.ts` (`apiUrl()`) + mount-aware redirects; foreclosure SessionProvider needs `basePath="/foreclosure/api/auth"`.
+- Windows-built standalone tarballs ship Windows Prisma/libsql engines; regenerate with `binaryTargets` incl. `debian-openssl-3.0.x` or every DB route 500s. LeadG (Next 14, Turbopack) builds on Hetzner when laptop npm is TLS-blocked.
+- LLM layer: ONE resolver (`src/lib/ai/active-provider.ts`) + Settings "Active AI Provider" (5 providers, vault keys AES-256-GCM). Never hardcode a provider at a call site again.
+- MCP: main 9 tools, aicrm 12, LeadCaller 5 (SSE; nginx `proxy_buffering off` required or streams hang). Per-user `recm_` tokens (hash-only, `data/mcp-tokens.json`) — an AI acts strictly as its realtor. Outbound calls: approval-gated, configuration-checked, never mock.
+- Test identities on prod: break-glass admin (env-gated, pw in laptop Temp) + `loop-test@` users per sub-app. Disk: swap-safe keeps newest 2 backups; /tmp churn fills fast at 91%+.
+
+
 ## Project Overview
 Multi-repo real estate operations & CRM platform (`Excel Legacy Realty Group`) consolidating the main Next.js CRM + 8 specialized sub-projects under `apps/` (12 runtime services total).
 - **GitHub Organization:** `RealEstateCRMLLC` (`https://github.com/RealEstateCRMLLC/RealEstateCRM.git`; legacy remotes `robertpelloni/realestatecrm` and `candlestixxx/realestatecrm` resolve to identical history).

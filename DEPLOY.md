@@ -332,5 +332,11 @@ ssh hetzner 'cd /var/www/excellegacyrealtygroup && BK=/tmp/ercm-backup-$(date +%
 ### Campaign defaults (0.61.6)
 On Hetzner with Node 24+, run DATABASE_URL pointing to the production SQLite database and node scripts/load-default-campaigns.mjs from the source checkout. This adds four company plans to each workspace without enrolling contacts or overwriting edited defaults. Future workspaces initialize on Campaigns page access. Server instrumentation scans due email/SMS tasks every minute. Live email/SMS provider configuration is required. ERROR or stranded IN_PROGRESS sends require operator review before reopening to avoid duplicate sends.
 
+### Ops notes (2026-11-16)
+- swap-safe.sh prunes /tmp/ercm-backup-* to the newest 2 automatically; a busy deploy day previously filled the disk to 91%.
+- Per-user MCP tokens and the active-provider setting live in server-side `data/*.json` (untracked, created at runtime) — they survive swaps because swap only replaces build artifacts; do not delete `data/` on the server.
+- Sub-app standalone builds must carry Linux native engines (Prisma `debian-openssl-3.0.x`, `@libsql/linux-x64-gnu`); deploy-aicrm.sh self-installs the libsql binary when missing. LeadG builds run on Hetzner when the laptop npm registry is unreachable (ship source tarball, build in /tmp, package there).
+- nginx: mounts that stream (LeadCaller MCP SSE) require `proxy_buffering off` (see deploy/add-leadcaller-nginx.sh).
+
 ## Heavyweight Process Priority Rule
 Run all heavy steps below normal priority. Linux/Hetzner: scripts/with-low-priority.sh <command>. Windows: (Get-Process -Id $PID).PriorityClass = 'BelowNormal' before npm run build. Never run heavy builds at normal priority.

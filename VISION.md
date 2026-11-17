@@ -4,6 +4,9 @@ The ultimate objective of this project is to build a real estate CRM that posses
 
 This simplicity is achieved by incorporating an **omnipresent AI Assistant** (Gemini) as an agentic co-pilot. The AI is not just a chatbot; it is integrated directly into the CRM's core, capable of navigating features, executing workflows, managing segments, and interacting with leads on the user's behalf.
 
+## Bring Your Own AI — Super Arm (Phase 18, 2026-11)
+The CRM is AI-agnostic: any realtor connects the LLM service of their choice (ChatGPT, Gemini, Claude, any MCP client) with a personal token and drives every CRM function by voice or text — plug-and-play inference, zero wiring ritual. HyperNexus is the router core: it drops the exact tool at the moment of need, shifts gears between LLMs, and carries memory across them, so swapping models loses nothing. The sector packs are the "arms": the same core supercharges real estate today; dental, medical billing, and other verticals are repeat sales later (parked until real-estate revenue, per the 90-day rules). Everything the AI does reports back through the CRM — source of truth, audit-trailed, approval-gated on anything outbound or financial.
+
 ## Design Direction
 - **The "Lofty Alternative":** Highly technical data models (pipelines, segments, workflows) hidden behind a clean, consumer-grade interface.
 - **AI-Powered Orchestration:** The AI Assistant acts as the primary bridge between the user and complex features (via Tool Calling).

@@ -2,6 +2,12 @@
 
 This document contains ideas for improvements, refactoring, new features, and pivots derived from deep analysis of the project's state.
 
+## 0. BYO-AI / Super-Arm Extensions (Phase 18, 2026-11)
+- **HN tool-drop aggregator:** one HyperNexus-fronted MCP endpoint that semantic-searches all three CRM MCP servers (26 tools today) and injects only the task-relevant tools into the AI's context — the "shifts gears" layer, measured against direct-MCP latency.
+- **QR pairing for per-user tokens:** dashboard shows a one-time QR/deep-link so a phone AI client pairs in one scan (token still shown once, hash-only at rest).
+- **Sector-arm starter kit:** `scripts/new-sector-arm` scaffolding (tool set + vocabulary + branding seed) so a new vertical (dental/medical) launches from the universal provisioner in hours, not weeks.
+- **Voice-first mobile shell:** the existing calculators + callable-leads tools behind one big "call my next lead" voice button for in-car use.
+
 ## 1. Architectural & Engineering Enhancements
 
 - **Zod for Schema Validation:** (Completed in v0.17.0)

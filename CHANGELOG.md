@@ -1,3 +1,9 @@
+## v0.67.14 (2026-11-16)
+
+### Chat consolidation + repo sanitization + docs refresh
+- `/dashboard/chat` (duplicate of the inbox's TeamChat over the same data) now redirects to `/dashboard/inbox`; duplicate sidebar item removed, coverage-rule card link retained. Verified live.
+- Deleted 5 duplicate local branches (all 0-ahead of main); all 8 submodules confirmed at their origin tips. MEMORY/VISION/IDEAS/DEPLOY refreshed with the v0.67.x architecture (auth guards, mount-prefix discipline, provider resolver, MCP/token model, Super-Arm phase). 75 tests pass, verify-live-prod ALL PASSED.
+
 ## v0.67.13 (2026-11-16)
 
 ### Per-user MCP tokens (BYO-AI identity)

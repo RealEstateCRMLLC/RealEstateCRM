@@ -39,6 +39,13 @@ test('SettingsTabs never imports panels from route files (redirect stubs crash t
   );
 });
 
+test('team chat route redirects into the unified inbox', () => {
+  const src = read('src/app/dashboard/chat/page.tsx');
+  assert.match(src, /redirect\('\/dashboard\/inbox'\)/, 'chat must redirect to the inbox that embeds TeamChat');
+  const nav = read('src/components/dashboard/SidebarNav.tsx');
+  assert.doesNotMatch(nav, /href: '\/dashboard\/chat'/, 'sidebar must not carry the duplicate chat item');
+});
+
 test('leadg middleware is a getToken guard with mount-aware login redirect', () => {
   const src = read('apps/leadg/src/middleware.ts');
   assert.doesNotMatch(src, /next-auth\/middleware|withAuth\(\{/, 'withAuth is inert in this stack and must not be used');

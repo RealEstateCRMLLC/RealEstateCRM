@@ -71,12 +71,7 @@ const GROUPS: NavGroup[] = [
       {
         label: 'Unified Inbox',
         href: '/dashboard/inbox',
-        tooltip: 'Email, SMS, social DMs, and voice notes in one thread per contact.',
-      },
-      {
-        label: 'Team Chat',
-        href: '/dashboard/chat',
-        tooltip: 'Private and group chat for internal team communication.',
+        tooltip: 'Email, SMS, social DMs, voice notes, and team chat in one thread per contact.',
       },
     ],
   },

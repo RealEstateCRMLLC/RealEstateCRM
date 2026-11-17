@@ -147,7 +147,7 @@ export function CommandPalette() {
                         { label: 'Inbox', icon: '📬', url: '/dashboard/inbox' },
                         { label: 'Listings', icon: '🏘️', url: '/dashboard/listings' },
                         { label: 'Reporting', icon: '📊', url: '/dashboard/reporting' },
-                        { label: 'Team Chat', icon: '💬', url: '/dashboard/chat' },
+                        { label: 'Team Chat', icon: '💬', url: '/dashboard/inbox' },
                         { label: 'Help Center', icon: '❓', url: '/dashboard/help-center' },
                       ].map(cmd => (
                         <Command.Item
