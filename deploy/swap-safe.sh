@@ -26,6 +26,10 @@ nice -n 10 tar xzf /tmp/deploy-v3.tar.gz
 ln -sfn client node_modules/@prisma/client-2c3a283f134fdcb6
 pm2 restart excellegacyrealtygroup --update-env
 
+# Retention: every swap leaves a ~324M backup in /tmp; keep only the
+# newest 2 so deploy churn cannot fill the disk (hit 91% on 2026-11-17).
+ls -dt /tmp/ercm-backup-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+
 sleep 7
 echo "AFTER_VERSION: $(cat VERSION.md)"
 echo "DEV_DB_BYTES: $(stat -c%s prisma/dev.db)"

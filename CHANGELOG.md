@@ -1,3 +1,9 @@
+## v0.67.11 (2026-11-16)
+
+### LeadCaller voice tools over MCP (approval-gated)
+- New MCP tools: `list_callable_leads`, `get_lead_call_history`, and `start_outbound_call` — the last requires explicit `confirm: true` and genuine Vapi configuration, and refuses honestly otherwise (never a mock call). Placeholder Vapi phone-number ID and webhook domain replaced with settings/env values. Verified live over the SSE transport (gate + not-configured paths).
+- Disk self-defense: pruned deploy churn (91% → 86%); `swap-safe.sh` now keeps only the newest 2 backups. 72 tests pass, verify-live-prod ALL PASSED.
+
 ## v0.67.10 (2026-11-16)
 
 ### Plug-and-play AI provider switching
