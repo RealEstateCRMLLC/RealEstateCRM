@@ -36,6 +36,7 @@ export const MCP_TOOLS: MCPToolDefinition[] = [
   { name: 'search_contacts', description: 'Search contacts by free-text query.', inputSchema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
   { name: 'log_activity', description: 'Log an activity against a lead.', inputSchema: { type: 'object', properties: { leadId: { type: 'string' }, type: { type: 'string' }, description: { type: 'string' } }, required: ['description'] } },
   { name: 'find_tools', description: 'Discover which tool (on this server or a sibling CRM server) fits a job, e.g. "call a lead", "move a lead stage", "summarize my brokerage". Returns ranked local tools plus sibling-server pointers (endpoint, transport, auth). Read-only discovery - start here when unsure which tool to call.', inputSchema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
+  { name: 'list_all_tools', description: 'List every tool across all CRM MCP servers (this server + aicrm live-merged; LeadCaller by pointer - it streams over SSE). Use to see the full capability surface in one call.', inputSchema: { type: 'object', properties: {} } },
 ];
 
 type ToolExecutor = (session: MCPSession, args: Record<string, unknown>) => Promise<unknown>;
@@ -93,6 +94,31 @@ const executors: Record<string, ToolExecutor> = {
   },
   async log_activity(session, args) {
     return prisma.activity.create({ data: { type: (args['type'] as string) || 'NOTE', content: args['description'] as string, userId: session.userId, workspaceId: session.workspaceId, leadId: (args['leadId'] as string) || null } });
+  },
+  async list_all_tools(_session) {
+    const servers: Record<string, unknown> = {
+      [SERVER_NAME]: MCP_TOOLS.map((t) => t.name),
+    };
+    // Live-merge aicrm when the shared sibling token is configured.
+    const siblingToken = process.env.MCP_SIBLING_TOKEN;
+    if (siblingToken) {
+      try {
+        const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://excellegacyrealtygroup.site';
+        const res = await fetch(`${origin}/aicrm/api/mcp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${siblingToken}` },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }),
+        });
+        const j = (await res.json()) as { result?: { tools?: { name: string }[] } };
+        servers['aicrm'] = j.result?.tools?.map((t) => t.name) || 'unreachable';
+      } catch {
+        servers['aicrm'] = 'unreachable';
+      }
+    } else {
+      servers['aicrm'] = 'not merged (MCP_SIBLING_TOKEN not configured on this server)';
+    }
+    servers['leadcaller'] = 'connect directly (SSE transport): /leadcaller/api/mcp - tools: query_mls_inventory, list_callable_leads, start_outbound_call, get_lead_call_history, check_agent_availability';
+    return { totalServers: 3, servers };
   },
   async find_tools(_session, args) {
     const query = (args['query'] as string) || '';

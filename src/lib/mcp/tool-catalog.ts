@@ -28,7 +28,7 @@ export const SIBLING_SERVERS: SiblingServer[] = [
     server: 'leadcaller',
     endpoint: '/leadcaller/api/mcp',
     transport: 'SSE (GET stream, then POST to the session endpoint it returns)',
-    auth: 'NextAuth session cookie for that mount (sign in at /leadg/login sibling app or /leadcaller/login)',
+    auth: 'LeadCaller NextAuth session cookie, or Authorization: Bearer <LC_MCP_TOKEN> (service token)',
     keywords: ['call', 'voice', 'dial', 'phone', 'outbound', 'vapi', 'mls', 'inventory', 'availability', 'calendar'],
     tools: ['query_mls_inventory', 'list_callable_leads', 'start_outbound_call', 'get_lead_call_history', 'check_agent_availability'],
     note: 'Voice/lead-calling tools. start_outbound_call is approval-gated (confirm:true) and refuses when telephony is unconfigured.',

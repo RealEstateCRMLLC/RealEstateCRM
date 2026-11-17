@@ -21,12 +21,19 @@ tar xzf /tmp/deploy-leadcaller.tar.gz
 mkdir -p prisma
 [ -f prisma/schema.prisma ] || cp "$BK/prisma/schema.prisma" prisma/ 2>/dev/null || true
 
-cat > .env << 'ENVEOF'
+# Preserve the MCP service token across redeploys (same pattern as aicrm JWT).
+LC_MCP_LINE=""
+if [ -f .env ]; then
+  LC_MCP_LINE=$(grep '^LC_MCP_TOKEN=' .env || true)
+fi
+
+cat > .env << ENVEOF
 DATABASE_URL="file:/var/www/leadcaller/prisma/dev.db"
 NEXTAUTH_SECRET="excel-legacy-leadcaller-secret-2026"
 NEXTAUTH_URL="https://excellegacyrealtygroup.site/leadcaller"
 PORT=3219
 NODE_ENV=production
+$LC_MCP_LINE
 ENVEOF
 
 DATABASE_URL="file:/var/www/leadcaller/prisma/dev.db" npx prisma db push --skip-generate --schema prisma/schema.prisma 2>&1 | tail -2 || true

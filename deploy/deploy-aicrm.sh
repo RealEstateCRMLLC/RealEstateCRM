@@ -28,6 +28,10 @@ fi
 if [ -f .env ] && [ -z "$JWT_LINE" ]; then
   JWT_LINE=$(grep '^JWT_SECRET=' .env || true)
 fi
+MCP_LINE=""
+if [ -f .env ]; then
+  MCP_LINE=$(grep '^MCP_TOKEN=' .env || true)
+fi
 
 tar xzf /tmp/deploy-aicrm.tar.gz
 
@@ -42,6 +46,7 @@ NEXTAUTH_URL="https://excellegacyrealtygroup.site/aicrm"
 PORT=3218
 NODE_ENV=production
 $JWT_LINE
+$MCP_LINE
 ENVEOF
 if ! grep -q '^JWT_SECRET=' .env; then
   echo "WARNING: JWT_SECRET missing after deploy - auth falls back to the public dev secret!"
