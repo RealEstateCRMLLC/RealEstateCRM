@@ -95,7 +95,8 @@
 - [x] RAG Consolidation: Refactor overlapping logic in `src/lib/rag.ts` and `src/lib/rag-sync.ts`.
 - [x] **AI Tool Calling:** Integrate `@ai-sdk/react` function calling to execute CRM actions (Lead routing, Task creation, Segments management).
 - [x] **AI Drip Execution:** Connect Twilio/SendGrid for automated SMS/Email dispatching led by Gemini.
-- [ ] **RAG context staleness (found v0.67.21):** `buildChatContext` summary counts disagree with the DB (context said leads=8, live count is 17). Find why the injected snapshot lags (cached summary vs live count) and make counts live or clearly dated.
+- [x] **RAG context staleness (fixed v0.67.22):** `buildChatContext` reported capped sample lengths (take 8/8/6/12) as totals — "leads=8" vs the real 17. Counts are now live COUNT queries and the lists are labeled samples; verified live (chat quoted 17/24/9 from context alone).
+- [ ] **Duplicate workflows surfaces:** `/workflows/*` (with the real-time SidebarAIAssistant) and `/dashboard/workflows/*` (with WorkflowSessionsPanel) both implement the same four workflows. Pick the canonical one, redirect the other per the consolidation rule, and keep the assistant reachable.
 - [ ] **ContentPlanner real login (owner):** CP has no working prod login — needs a GitHub OAuth app (`GITHUB_ID`/`GITHUB_SECRET` in CP `.env`) or a password system (`User.passwordHash` + register flow). Login page is honest about it since v0.67.21.
 - [ ] **ContentPlanner nav links leave the mount:** CP sidebar/RSC links are root-absolute (`/dashboard`, `/content`, ...) so under `/contentplanner` they hit the main CRM and 500. Needs mount-aware hrefs (or a real `basePath` pass) across CP's nav + Link usage.
 - [ ] **Real OpenAI key (owner Tier-1):** vault `openai` row is a dev fixture (`test-key-123`, undecryptable in prod). Re-save a real key in Settings → AI Models, then switch Active Provider back from DeepSeek if desired.

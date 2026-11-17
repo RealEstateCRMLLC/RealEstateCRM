@@ -112,7 +112,7 @@ export default function AIChat() {
           <div className="bg-primary p-4 flex justify-between items-center text-primary-foreground">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-card animate-pulse"></div>
-              <h3 className="font-bold text-sm tracking-tight uppercase">Gemini AI Command Center</h3>
+              <h3 className="font-bold text-sm tracking-tight uppercase">AI Command Center</h3>
             </div>
             <button type="button"
               onClick={() => setIsOpen(false)}

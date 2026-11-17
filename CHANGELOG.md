@@ -1,3 +1,13 @@
+## v0.67.22 (2026-11-17)
+
+### RAG counts made true + the fake workflows assistant made real
+- **RAG context counts were sample lengths, not totals.** `buildChatContext` capped its lists at 8/8/6/12 and reported those lengths as the workspace counts, so the chat model believed "leads=8" in a 17-lead workspace. Counts are now live COUNT queries and the lists are labeled "sample of N". Verified live: chat quoted leads=17, contacts=24, deals=9 from context alone, no tools.
+- **The workflows sidebar "AI Assistant" was simulated.** It answered with canned text after an 800ms delay behind a green "Active Copilot" badge. It now posts to the real AgentCore endpoint (rules + active-provider LLM) and renders real results, with honest failure states. Verified in a real browser: clicking "Hot Leads" returned the live answer ("0 hot leads right now. Next step: work the newest leads…"). Quick prompts now use commands that actually execute.
+- **Provider-neutral branding:** chat widget header/greeting and the sidebar no longer claim to be "Gemini" — the provider is whatever Settings selects (currently DeepSeek).
+- **`/workflows` hub:** the bare path 404'd despite having a layout and four subroutes; it now lands on a hub page linking the four workflows.
+- **Full MCP battery re-run after all changes:** main 11 tools (unauth 401, unknown tool clean error, `list_all_tools` fan-out live), aicrm 12 (test-tenant contact read), LeadCaller 5 (unauth 401, 2 callable test leads), kernel search (`?query=`) ranks LeadCaller #1 for "call a lead". aicrm's hypernexus_* tools still return [] from Hetzner (kernel is laptop-side, by topology).
+- Filed: duplicate `/workflows/*` vs `/dashboard/workflows/*` surfaces to consolidate. 90 tests pass, verify-live-prod ALL PASSED.
+
 ## v0.67.21 (2026-11-17)
 
 ### BYO-AI chat + voice surfaces made real (and one silent downgrade exposed)
