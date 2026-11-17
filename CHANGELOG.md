@@ -1,3 +1,8 @@
+## v0.67.7 (2026-11-16)
+
+### Consolidation audit + LeadG bootstrap (docs)
+- Verified prior consolidation holds (reporting/analytics redirect, one-page CommandCenter, tidy scripts). LeadG had never been bootstrapped on prod (no organizations): created test org + admin and verified its authenticated screens live. Noted logged-out LeadG dashboard hangs on a loading state instead of redirecting to login.
+
 ## v0.67.6 (2026-11-16)
 
 ### Sub-app auth saga closed + aicrm register/MCP repaired + LC MCP unblocked
