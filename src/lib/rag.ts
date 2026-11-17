@@ -658,7 +658,7 @@ function formatList(title: string, items: string[]) {
 }
 
 export async function buildChatContext({ workspaceSlug, query }: ChatContextInput) {
-  const [workspace, leads, contacts, deals, activities, vectorMatches] = await Promise.all([
+  const [workspace, leads, contacts, deals, activities, vectorMatches, leadCount, contactCount, dealCount, activityCount] = await Promise.all([
     prisma.workspace.findUnique({
       where: { id: workspaceSlug },
       select: { id: true, name: true },
@@ -726,6 +726,15 @@ export async function buildChatContext({ workspaceSlug, query }: ChatContextInpu
       limit: 8,
       entityTypes: ['lead', 'contact', 'activity', 'deal'],
     }),
+    // True totals for the Counts line. The sampled arrays above are
+    // capped (take 8/8/6/12), so reporting their .length as the count
+    // told the model "leads=8" when the workspace had 17 — and the
+    // model then quoted the sample as the total. Counts must be real
+    // COUNT queries; the samples stay labeled as samples below.
+    prisma.lead.count({ where: { workspaceId: workspaceSlug } }),
+    prisma.contact.count({ where: { workspaceId: workspaceSlug } }),
+    prisma.deal.count({ where: { workspaceId: workspaceSlug } }),
+    prisma.activity.count({ where: { workspaceId: workspaceSlug } }),
   ]);
 
   const workspaceLabel = workspace?.name ?? workspaceSlug;
@@ -766,16 +775,16 @@ export async function buildChatContext({ workspaceSlug, query }: ChatContextInpu
     `Workspace: ${workspaceLabel} (${workspaceSlug})`,
     `Query: ${query.trim() || 'none'}`,
     '',
-    `Counts: leads=${leads.length}, contacts=${contacts.length}, deals=${deals.length}, activities=${activities.length}`,
+    `Counts (live totals): leads=${leadCount}, contacts=${contactCount}, deals=${dealCount}, activities=${activityCount}`,
     '',
     formatList('Top Semantic Matches', semanticMatches),
     '',
-    formatList('Recent Leads', recentLeads),
+    formatList(`Recent Leads (sample of ${leads.length} of ${leadCount})`, recentLeads),
     '',
-    formatList('Recent Contacts', recentContacts),
+    formatList(`Recent Contacts (sample of ${contacts.length} of ${contactCount})`, recentContacts),
     '',
-    formatList('Recent Deals', recentDeals),
+    formatList(`Recent Deals (sample of ${deals.length} of ${dealCount})`, recentDeals),
     '',
-    formatList('Recent Activities', recentActivities),
+    formatList(`Recent Activities (sample of ${activities.length} of ${activityCount})`, recentActivities),
   ].join('\n');
 }
