@@ -48,6 +48,18 @@ test('contentplanner login page only offers configured providers', () => {
   );
 });
 
+test('settings reports key health and refuses to activate an unreadable key', () => {
+  const route = readFileSync(join(root, 'src/app/api/ai/provider-setting/route.ts'), 'utf8');
+  const client = readFileSync(join(root, 'src/components/AIModelsSettingsClient.tsx'), 'utf8');
+  assert.match(route, /keyHealth/, 'GET must report per-provider key health');
+  assert.match(route, /health\[provider\] === 'unreadable'/, 'POST must refuse to activate an undecryptable key');
+  assert.match(route, /Re-save its key/, 'refusal must tell the operator how to fix it');
+  assert.match(client, /key unreadable/, 'the provider select must label an unreadable key honestly');
+  assert.match(route, /maxTokens: 512/, 'the connectivity probe needs budget for reasoning models');
+  assert.match(route, /did not return the expected marker/, 'the probe must verify the marker, not just any reply');
+  assert.doesNotMatch(route, /key: row\.key|apiKey: .*\.key/, 'key material must never be serialized');
+});
+
 test('undecryptable selected key is an error, never a silent downgrade', () => {
   assert.match(resolver, /reason: 'no-key'/, 'resolver must distinguish a broken selected key from unconfigured');
   assert.match(chat, /resolved\.reason === 'no-key'/, 'chat must surface the broken-key state');

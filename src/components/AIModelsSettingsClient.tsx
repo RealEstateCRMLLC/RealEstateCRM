@@ -32,6 +32,7 @@ export default function AIModelsSettingsClient() {
   const [activeProvider, setActiveProvider] = useState('');
   const [activeModel, setActiveModel] = useState('');
   const [envProviders, setEnvProviders] = useState<string[]>([]);
+  const [keyHealth, setKeyHealth] = useState<Record<string, string>>({});
   const [savingActive, setSavingActive] = useState(false);
   const [testing, setTesting] = useState(false);
 
@@ -53,6 +54,7 @@ export default function AIModelsSettingsClient() {
       const data = await res.json();
       setConfigured(data.configuredProviders || []);
       setEnvProviders(data.envProviders || []);
+      setKeyHealth(data.keyHealth || {});
       if (data.setting?.provider) {
         setActiveProvider(data.setting.provider);
         setActiveModel(data.setting.model || '');
@@ -175,7 +177,11 @@ export default function AIModelsSettingsClient() {
             <option value="">Select provider…</option>
             {PROVIDERS.map((p) => (
               <option key={p.id} value={p.id} disabled={!switchableIds().includes(p.id)}>
-                {p.name}{switchableIds().includes(p.id) ? '' : ' (no key)'}
+                {p.name}{!switchableIds().includes(p.id)
+                  ? ' (no key)'
+                  : keyHealth[p.id] === 'unreadable'
+                    ? ' (key unreadable — re-save below)'
+                    : ''}
               </option>
             ))}
           </select>
