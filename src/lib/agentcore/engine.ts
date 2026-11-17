@@ -7,34 +7,12 @@
  */
 
 import prisma from '@/lib/prisma';
-import { createProviderClient } from '@/lib/ai/llm-providers';
-import { deepSeekCompletion, DEEPSEEK_MODEL } from '@/lib/ai/deepseek';
+import { completeWithActiveProvider } from '@/lib/ai/active-provider';
 
 async function callLLM(prompt: string, system?: string): Promise<string | null> {
-  // Prefer DeepSeek (single LLM provider for the platform).
-  try {
-    if (process.env.DEEPSEEK_API_KEY) {
-      return await deepSeekCompletion({ prompt, system });
-    }
-  } catch (e) {
-    console.warn('[AgentCore] DeepSeek completion failed, falling back:', e);
-  }
-  // Fallback: encrypted per-workspace key from the apiKey vault.
-  try {
-    const apiKeyRecord =
-      (await prisma.apiKey.findFirst({ where: { provider: 'deepseek' } })) ??
-      (await prisma.apiKey.findFirst({ where: { provider: 'openai' } }));
-    if (!apiKeyRecord) return null;
-    const { decrypt } = await import('@/lib/encryption');
-    const key = decrypt(apiKeyRecord.key);
-    const provider = apiKeyRecord.provider === 'deepseek' ? 'deepseek' : 'openai';
-    const model = apiKeyRecord.provider === 'deepseek' ? DEEPSEEK_MODEL : 'gpt-4o-mini';
-    const client = createProviderClient(provider, model, key);
-    const result = await client.complete({ prompt, system });
-    return result.text;
-  } catch {
-    return null;
-  }
+  // Managed provider: switch in Settings -> AI Model Keys (OpenAI, Claude,
+  // Gemini, DeepSeek, Qwen). Resolver falls back to DeepSeek automatically.
+  return completeWithActiveProvider({ prompt, system });
 }
 
 export interface AgentCoreContext {

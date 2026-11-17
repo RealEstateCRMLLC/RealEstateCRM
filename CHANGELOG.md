@@ -1,3 +1,9 @@
+## v0.67.10 (2026-11-16)
+
+### Plug-and-play AI provider switching
+- Settings → AI Model Keys gains an **Active AI Provider** switch (OpenAI, Anthropic, Gemini, DeepSeek, Qwen + model + Test Connection). One resolver (`lib/ai/active-provider.ts`) now powers the command engine and lead scoring — previously DeepSeek-hardcoded, so other stored keys were never used. Verified live with a real completion ("provider-ok"). 69 tests pass.
+- Recorded the BYO-AI / Super-Arm roadmap (ROADMAP Phase 18): HyperNexus as MCP router with cross-LLM memory, sector arms (real estate first; dental/medical parked until revenue), per-user MCP + voice control as next builds. Not pitch-ready until verified in a real MCP client session.
+
 ## v0.67.9 (2026-11-16)
 
 ### Team Chat create fixed + Agent Websites hydration fixed

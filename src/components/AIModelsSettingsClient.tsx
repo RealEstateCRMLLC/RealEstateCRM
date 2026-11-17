@@ -29,6 +29,11 @@ export default function AIModelsSettingsClient() {
   const [configured, setConfigured] = useState<ConfiguredKey[]>([]);
   const [keys, setKeys] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [activeProvider, setActiveProvider] = useState('');
+  const [activeModel, setActiveModel] = useState('');
+  const [envProviders, setEnvProviders] = useState<string[]>([]);
+  const [savingActive, setSavingActive] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   const loadConfigured = useCallback(async () => {
     try {
@@ -41,6 +46,72 @@ export default function AIModelsSettingsClient() {
   }, []);
 
   useEffect(() => { loadConfigured(); }, [loadConfigured]);
+
+  const loadActive = useCallback(async () => {
+    try {
+      const res = await fetch('/api/ai/provider-setting');
+      const data = await res.json();
+      setConfigured(data.configuredProviders || []);
+      setEnvProviders(data.envProviders || []);
+      if (data.setting?.provider) {
+        setActiveProvider(data.setting.provider);
+        setActiveModel(data.setting.model || '');
+      } else if ((data.configuredProviders || []).length > 0) {
+        const first = data.configuredProviders[0];
+        setActiveProvider(typeof first === 'string' ? first : first.provider);
+      }
+      setLoading(false);
+    } catch {
+      toast.error('Failed to load provider settings');
+    }
+  }, []);
+
+  useEffect(() => { loadActive(); }, [loadActive]);
+
+  const switchableIds = () => {
+    const ids = new Set<string>(envProviders);
+    for (const c of configured) ids.add(typeof c === 'string' ? c : c.provider);
+    return [...ids];
+  };
+
+  const setActive = async () => {
+    if (!activeProvider) return;
+    setSavingActive(true);
+    try {
+      const res = await fetch('/api/ai/provider-setting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: activeProvider, model: activeModel || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      toast.success(`Active provider: ${data.setting.provider} (${data.setting.model})`);
+      setActiveProvider(data.setting.provider);
+      setActiveModel(data.setting.model);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to set active provider');
+    } finally {
+      setSavingActive(false);
+    }
+  };
+
+  const testActive = async () => {
+    setTesting(true);
+    try {
+      const res = await fetch('/api/ai/provider-setting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'test' }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Test failed');
+      toast.success(`Active provider replied: "${data.reply}"`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Provider test failed');
+    } finally {
+      setTesting(false);
+    }
+  };
 
   const isConfigured = (providerId: string) => configured.some(c => c.provider === providerId);
 
@@ -86,6 +157,53 @@ export default function AIModelsSettingsClient() {
         <p className="text-sm text-muted-foreground mt-1">
           Securely store LLM provider API keys. Keys are encrypted with AES-256-GCM and never exposed in plaintext.
         </p>
+      </div>
+
+      <div className="bg-background border border-secondary/40 rounded-xl p-5">
+        <h3 className="text-sm font-bold text-foreground">Active AI Provider</h3>
+        <p className="text-xs text-muted-foreground mt-1">
+          Every AI feature (command engine, lead scoring, drafts) runs through this provider.
+          Add a key below first, then switch here. Changes take effect immediately - no restart.
+        </p>
+        <div className="flex flex-wrap gap-2 mt-4">
+          <select
+            aria-label="Active provider"
+            value={activeProvider}
+            onChange={(e) => setActiveProvider(e.target.value)}
+            className="px-3 py-2 text-sm bg-muted/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/50 text-foreground"
+          >
+            <option value="">Select provider…</option>
+            {PROVIDERS.map((p) => (
+              <option key={p.id} value={p.id} disabled={!switchableIds().includes(p.id)}>
+                {p.name}{switchableIds().includes(p.id) ? '' : ' (no key)'}
+              </option>
+            ))}
+          </select>
+          <input
+            aria-label="Active model"
+            value={activeModel}
+            onChange={(e) => setActiveModel(e.target.value)}
+            placeholder="Model (blank = provider default)"
+            className="flex-1 min-w-44 px-3 py-2 text-sm bg-muted/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/50 text-foreground placeholder:text-muted-foreground"
+          />
+          <button type="button"
+            onClick={setActive}
+            disabled={savingActive || !activeProvider}
+            className="px-4 py-2 bg-secondary text-secondary-foreground text-sm font-bold rounded-lg hover:bg-secondary/90 disabled:opacity-50 transition-colors"
+          >
+            {savingActive ? 'Saving...' : 'Set Active'}
+          </button>
+          <button type="button"
+            onClick={testActive}
+            disabled={testing}
+            className="px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          >
+            {testing ? 'Testing...' : 'Test Connection'}
+          </button>
+        </div>
+        {switchableIds().length === 0 && (
+          <p className="text-[11px] text-amber-500 font-semibold mt-2">No provider keys configured yet - add one below to enable switching.</p>
+        )}
       </div>
 
       <div className="grid gap-4">

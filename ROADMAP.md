@@ -211,6 +211,15 @@ Trust, Security & Future (TSF) Master Bundle live on /trust-services: realtor-te
 - [x] Added server-side 12-service TCP health probe (`/api/system/health`) + upgraded `ServiceHealthGrid`, `build-all.ps1` (10 targets), `start-all.ps1` / `start-all.bat` (12 services at `BelowNormal`), `watch-services.ps1`, and non-blocking `system-tray.ps1` (GDI handle leak fixed, single-pass `netstat`).
 - [x] Fixed runtime Prisma/import bugs discovered during deep audit (`MyPlusImportModal` missing `importCsvAction`, `/api/posts` `isPublished` field mismatch, `myPlusLeadsIntegration.findFirst` unique-key fix, `tsconfig.json` submodule exclusion).
 
+## Phase 18 — HyperNexus MCP Router + Sector Arms (BYO-AI) [IN PROGRESS]
+Core (built once): HyperNexus as MCP router — drops the exact tool to whichever AI is talking, shifts gears between LLMs, cross-LLM memory (its brain in a sub-file/store), so swapping models loses nothing. CRM exposes functions as MCP tools; the realtor connects ANY LLM service (ChatGPT, Gemini, Claude, ...) and drives the CRM by voice/text — plug-and-play inference, no wiring ritual.
+- [x] Provider switching v1 (v0.67.10): Settings → AI Model Keys "Active AI Provider" (OpenAI/Anthropic/Gemini/DeepSeek/Qwen) + one resolver (`lib/ai/active-provider.ts`) used by AgentCore + lead scoring; verified live with a real completion.
+- [x] CRM MCP servers exist: main (9 tools), aicrm (12 tools), LeadCaller (SSE transport, nginx unbuffered).
+- [ ] Voice control: expose LeadCaller call tools (start/monitor/end) as MCP tools with approval gates; voice → AI → MCP → CRM audit trail. Needs telephony number first (Phase 17 key).
+- [ ] Per-user MCP connection (OAuth/token per realtor in Integrations settings) — today: session cookie (per-user) + workspace bearer token.
+- [ ] HyperNexus tool-drop routing in front of CRM MCP (relevant-tools-only context) — accelerator, never a lock-in; direct MCP must keep working.
+Arms (repeat sales, same core, new tool set + branding): #1 Real Estate (this CRM — must pay first, Hank pilot is the wedge). PARKED until real-estate revenue: dental (Roy's), medical billing, other verticals — revenue before expansion per 90-day rules. Tool-count honesty: ~2,000 is the owner's figure; counts on record are 12,158 catalog rows / 781 verified — quote neither publicly until the ordered stress test settles it.
+
 ## Phase 17 — Live External Provider Cutover & Monetization [NEXT]
 - [ ] Stripe Checkout + webhook gating on `/trust-services` ($997 Done-With-You Assembly & $1,497 TSF Master Bundle) and `/trust-course` ($497 1-on-1 Package).
 - [ ] Hetzner nginx reverse-proxy mounts for `/aicrm/` (`:3216`), `/leadcaller/` (`:3217`), and `/prototype/` (`:3218`).

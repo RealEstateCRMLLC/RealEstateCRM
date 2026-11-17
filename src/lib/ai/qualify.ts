@@ -1,6 +1,5 @@
 import prisma from '@/lib/prisma';
-import { createProviderClient } from '@/lib/ai/llm-providers';
-import { deepSeekCompletion, DEEPSEEK_MODEL } from '@/lib/ai/deepseek';
+import { completeWithActiveProvider, getActiveProvider } from '@/lib/ai/active-provider';
 
 /**
  * AI Lead Qualification Engine
@@ -65,30 +64,14 @@ Respond with ONLY a JSON object:
 {"score": <0-100>, "grade": "HOT|WARM|COLD", "reasoning": "<2-3 sentence explanation>", "factors": {"contact_completeness": <0-15>, "engagement": <0-20>, "interaction_depth": <0-15>, "status_quality": <0-20>, "follow_up": <0-10>, "freshness": <0-10>, "source_quality": <0-10>}}`;
 
   try {
-    // Try LLM-based scoring — prefer DeepSeek (single platform LLM), then vault key.
-    let resultText: string | null = null;
-    let modelUsed = DEEPSEEK_MODEL;
-    if (process.env.DEEPSEEK_API_KEY) {
-      resultText = await deepSeekCompletion({
-        prompt,
-        system: 'You are a real estate lead scoring AI. Respond only with valid JSON.',
-      });
-    } else {
-      const apiKeyRecord =
-        (await prisma.apiKey.findFirst({ where: { provider: 'deepseek' } })) ??
-        (await prisma.apiKey.findFirst({ where: { provider: 'openai' } }));
-      if (apiKeyRecord) {
-        const { decrypt } = await import('@/lib/encryption');
-        const key = decrypt(apiKeyRecord.key);
-        const provider = apiKeyRecord.provider === 'deepseek' ? 'deepseek' : 'openai';
-        modelUsed = apiKeyRecord.provider === 'deepseek' ? DEEPSEEK_MODEL : 'gpt-4o-mini';
-        const client = createProviderClient(provider, modelUsed, key);
-        resultText = (await client.complete({
-          prompt,
-          system: 'You are a real estate lead scoring AI. Respond only with valid JSON.',
-        })).text;
-      }
-    }
+    // Managed provider (Settings -> AI Model Keys): any configured LLM,
+    // with automatic DeepSeek fallback inside the resolver.
+    const active = await getActiveProvider();
+    const modelUsed = active?.model || 'deepseek-v4-flash';
+    const resultText = await completeWithActiveProvider({
+      prompt,
+      system: 'You are a real estate lead scoring AI. Respond only with valid JSON.',
+    });
 
     if (resultText) {
       const parsed = JSON.parse(resultText);
