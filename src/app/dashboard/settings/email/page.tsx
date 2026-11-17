@@ -1,13 +1,11 @@
-import { getEmailConfig } from '@/lib/email-config';
-import EmailSettingsClient from '@/components/EmailSettingsClient';
+/**
+ * Redirect to the consolidated settings page.
+ * This panel lives inline in SettingsTabs (?tab=email); this route is
+ * kept only for bookmarks and external deep links (same pattern as the
+ * reporting/analytics merge).
+ */
+import { redirect } from 'next/navigation';
 
-export default async function EmailSettingsPage() {
-  const config = await getEmailConfig();
-
-  return (
-    <div className="max-w-6xl mx-auto">
-      <EmailSettingsClient initialConfig={config} />
-    </div>
-  );
+export default function EmailSettingsRedirect() {
+  redirect('/dashboard/settings?tab=email');
 }
-export const revalidate = 0;

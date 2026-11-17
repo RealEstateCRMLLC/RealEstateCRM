@@ -1,33 +1,11 @@
-import { Metadata } from 'next';
-import prisma from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import IntegrationCenterClient from '@/components/IntegrationCenterClient';
-import MlsConnectionForm from '@/components/MlsConnectionForm';
+/**
+ * Redirect to the consolidated settings page.
+ * This panel lives inline in SettingsTabs (?tab=integrations); this route is
+ * kept only for bookmarks and external deep links (same pattern as the
+ * reporting/analytics merge).
+ */
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Integration Center - Settings',
-};
-
-export default async function IntegrationsPage() {
-  const session = await getServerSession(authOptions);
-  const workspaceId = session?.user?.workspaceId || 'default';
-
-  let integrationData = null;
-
-  if (workspaceId && workspaceId !== 'default') {
-    integrationData = await prisma.myPlusLeadsIntegration.findFirst({
-      where: { workspaceId },
-    });
-  }
-
-  return (
-    <>
-      <IntegrationCenterClient
-        initialData={integrationData}
-        workspaceId={workspaceId}
-      />
-      <MlsConnectionForm />
-    </>
-  );
+export default function IntegrationsSettingsRedirect() {
+  redirect('/dashboard/settings?tab=integrations');
 }

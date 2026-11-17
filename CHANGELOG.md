@@ -1,3 +1,10 @@
+## v0.67.8 (2026-11-16)
+
+### LiveAudio console spam fixed, settings routes consolidated, LeadG auth guard
+- LiveAudioMonitor no longer dials `ws://localhost:8090` from public origins (localhost/env-gated, reconnect capped at 3, quiet "Local only" state). Verified live: zero WS attempts.
+- Settings: 8 duplicate subpages now redirect into the consolidated `?tab=` settings page; Branding/Team panels extracted to shared components (tabs importing route files crashed - pinned by test).
+- LeadG: inert `withAuth` replaced with the getToken guard (logged-out dashboard hung on "Loading…"); built on Hetzner (laptop npm TLS-blocked) and deployed - 307 to /leadg/login verified.
+
 ## v0.67.7 (2026-11-16)
 
 ### Consolidation audit + LeadG bootstrap (docs)

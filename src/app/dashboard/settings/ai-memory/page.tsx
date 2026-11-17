@@ -1,10 +1,11 @@
-import { Metadata } from 'next';
-import AILearningMemory from '@/components/AILearningMemory';
+/**
+ * Redirect to the consolidated settings page.
+ * This panel lives inline in SettingsTabs (?tab=ai-memory); this route is
+ * kept only for bookmarks and external deep links (same pattern as the
+ * reporting/analytics merge).
+ */
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'AI Learning & Memory - Settings',
-};
-
-export default function AIMemorySettingsPage() {
-  return <AILearningMemory />;
+export default function AIMemorySettingsRedirect() {
+  redirect('/dashboard/settings?tab=ai-memory');
 }

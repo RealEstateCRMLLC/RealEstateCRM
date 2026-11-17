@@ -12,8 +12,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import RoutingRulesWidget from '@/components/RoutingRulesWidget';
-import BrandingSettingsPage from '@/app/dashboard/settings/branding/page';
-import TeamSettingsPage from '@/app/dashboard/settings/team/page';
+import BrandingSettings from '@/components/settings/BrandingSettings';
+import TeamSettings from '@/components/settings/TeamSettings';
 import IntegrationCenterClient from '@/components/IntegrationCenterClient';
 import MlsConnectionForm from '@/components/MlsConnectionForm';
 import EmailSettingsClient from '@/components/EmailSettingsClient';
@@ -347,11 +347,11 @@ export default function SettingsTabs({
 
           {current.id === 'email' && <EmailSettingsClient initialConfig={resolvedEmailConfig} />}
 
-          {current.id === 'branding' && <BrandingSettingsPage />}
+          {current.id === 'branding' && <BrandingSettings />}
 
           {current.id === 'sector-pack' && <UniversalProvisioner mode="workspace" />}
 
-          {current.id === 'team' && <TeamSettingsPage />}
+          {current.id === 'team' && <TeamSettings />}
 
           {current.id === 'routing' && <RoutingRulesWidget />}
 

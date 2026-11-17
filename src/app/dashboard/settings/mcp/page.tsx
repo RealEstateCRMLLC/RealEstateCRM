@@ -1,10 +1,11 @@
-import { Metadata } from 'next';
-import MCPSettingsClient from '@/components/MCPSettingsClient';
+/**
+ * Redirect to the consolidated settings page.
+ * This panel lives inline in SettingsTabs (?tab=mcp); this route is
+ * kept only for bookmarks and external deep links (same pattern as the
+ * reporting/analytics merge).
+ */
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'MCP Server - Settings',
-};
-
-export default function MCPSettingsPage() {
-  return <MCPSettingsClient />;
+export default function MCPSettingsRedirect() {
+  redirect('/dashboard/settings?tab=mcp');
 }

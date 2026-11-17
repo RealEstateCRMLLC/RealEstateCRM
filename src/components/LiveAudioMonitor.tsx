@@ -9,13 +9,27 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-const WS_URL = 'ws://localhost:8090';
+const WS_URL = process.env.NEXT_PUBLIC_LIVE_AUDIO_WS_URL || 'ws://localhost:8090';
+// The live-audio bridge runs on the operator's own machine (:8090). From a
+// public origin, ws://localhost can never reach it - attempting (and
+// auto-reconnecting forever) only floods every visitor's console. Only
+// auto-connect on localhost unless an explicit public WS URL is configured.
+const MAX_AUTO_RECONNECTS = 3;
+
+function canAutoConnect(): boolean {
+  if (process.env.NEXT_PUBLIC_LIVE_AUDIO_WS_URL) return true;
+  if (typeof window === 'undefined') return false;
+  return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+}
 
 export default function LiveAudioMonitor() {
-  const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'local-only'>(
+    () => (canAutoConnect() ? 'connecting' : 'local-only'),
+  );
   const [messageCount, setMessageCount] = useState(0);
   const [lastMessage, setLastMessage] = useState<string>('');
   const wsRef = useRef<WebSocket | null>(null);
+  const attemptsRef = useRef(0);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Ref indirection for the reconnect timer: onclose must schedule the *latest* connect without the useCallback closing over itself (react-hooks/immutability).
   const connectRef = useRef<(() => void) | null>(null);
@@ -33,7 +47,10 @@ export default function LiveAudioMonitor() {
       const ws = new WebSocket(WS_URL);
       wsRef.current = ws;
 
-      ws.onopen = () => setStatus('connected');
+      ws.onopen = () => {
+        attemptsRef.current = 0;
+        setStatus('connected');
+      };
 
       ws.onmessage = (event) => {
         setMessageCount((c) => c + 1);
@@ -44,8 +61,12 @@ export default function LiveAudioMonitor() {
 
       ws.onclose = () => {
         setStatus('disconnected');
-        // Auto-reconnect every 10 seconds — the WS server may restart
-        reconnectTimer.current = setTimeout(() => connectRef.current?.(), 10_000);
+        // Auto-reconnect a few times (server may restart), then stop -
+        // the manual Reconnect button re-arms. No infinite console spam.
+        attemptsRef.current += 1;
+        if (attemptsRef.current <= MAX_AUTO_RECONNECTS) {
+          reconnectTimer.current = setTimeout(() => connectRef.current?.(), 10_000);
+        }
       };
 
       ws.onerror = () => {
@@ -62,6 +83,7 @@ export default function LiveAudioMonitor() {
   });
 
   useEffect(() => {
+    if (!canAutoConnect()) return;
     connect();
     return () => {
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
@@ -74,14 +96,18 @@ export default function LiveAudioMonitor() {
       ? 'text-green-500'
       : status === 'connecting'
         ? 'text-yellow-500'
-        : 'text-red-500';
+        : status === 'local-only'
+          ? 'text-muted-foreground'
+          : 'text-red-500';
 
   const statusDot =
     status === 'connected'
       ? 'bg-green-500'
       : status === 'connecting'
         ? 'bg-yellow-500 animate-pulse'
-        : 'bg-red-500';
+        : status === 'local-only'
+          ? 'bg-muted-foreground'
+          : 'bg-red-500';
 
   return (
     <div className="bg-background border border-border rounded-xl p-4 space-y-2">
@@ -103,10 +129,20 @@ export default function LiveAudioMonitor() {
 
       <div className="flex items-baseline gap-2">
         <span className={'text-sm font-bold ' + statusColor}>
-          {status === 'connected' ? 'Connected' : status === 'connecting' ? 'Connecting...' : 'Disconnected'}
+          {status === 'connected'
+            ? 'Connected'
+            : status === 'connecting'
+              ? 'Connecting...'
+              : status === 'local-only'
+                ? 'Local only'
+                : 'Disconnected'}
         </span>
         <span className="text-xs text-muted-foreground">
-          {messageCount > 0 ? messageCount + ' msgs' : 'port 8090'}
+          {messageCount > 0
+            ? messageCount + ' msgs'
+            : status === 'local-only'
+              ? 'runs on the operator machine (:8090)'
+              : 'port 8090'}
         </span>
       </div>
 
