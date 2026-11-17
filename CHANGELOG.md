@@ -1,3 +1,8 @@
+## v0.67.17 (2026-11-16)
+
+### AgentCore interpreted intents execute for real
+- The LLM fallback used to return its interpreted plan as text. It now maps to a whitelist of read-only executors (summary, contact/lead/task lists, hot-lead count, contact lookup) and runs them; writes remain on auditable rule patterns. Fixed the rule parser reading possessive "my" as a contact name. Verified live: all three previously-broken commands return real data. 79 tests pass.
+
 ## v0.67.16 (2026-11-16)
 
 ### AgentCore live verification (docs)

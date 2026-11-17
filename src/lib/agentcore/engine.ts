@@ -8,6 +8,7 @@
 
 import prisma from '@/lib/prisma';
 import { completeWithActiveProvider } from '@/lib/ai/active-provider';
+import { detectIntent, parseInterpretedIntent, INTERPRETED_INTENTS } from './intents';
 
 async function callLLM(prompt: string, system?: string): Promise<string | null> {
   // Managed provider: switch in Settings -> AI Model Keys (OpenAI, Claude,
@@ -30,12 +31,6 @@ export interface AgentCoreResult {
 }
 
 type ActionExecutor = (ctx: AgentCoreContext, params: Record<string, string>) => Promise<AgentCoreResult>;
-
-interface IntentRule {
-  intent: string;
-  patterns: RegExp[];
-  execute: ActionExecutor;
-}
 
 const updateLeadStage: ActionExecutor = async (ctx, params) => {
   const statusMap: Record<string, string> = {
@@ -132,63 +127,90 @@ const draftContent: ActionExecutor = async (_ctx, params) => {
   return { success: true, message: draft };
 };
 
-export const INTENT_RULES: IntentRule[] = [
-  { intent: 'update_lead_stage', patterns: [
-    /update\s+(?:lead\s+)?(\S+)\s+to\s+(hot|cold|active|new|closed won|closed lost|won|lost|contacted)/i,
-    /set\s+(?:lead\s+)?(\S+)\s+(?:stage|status)\s+to\s+(hot|cold|active|new|closed won|closed lost|won|lost|contacted)/i,
-    /mark\s+(?:lead\s+)?(\S+)\s+as\s+(hot|cold|active|new|closed won|closed lost|won|lost|contacted)/i,
-  ], execute: updateLeadStage },
-  { intent: 'create_task', patterns: [
-    /(?:create|add|schedule)\s+(?:a\s+)?task\s+(?:to\s+)?(.+?)(?:\s+(?:for|due|when|at)\s+(.+))?$/i,
-    /remind\s+me\s+to\s+(.+)/i,
-  ], execute: createTask },
-  { intent: 'list_contacts', patterns: [ /(?:list|show|get|display)\s+(?:all\s+)?(?:my\s+)?contacts/i, /who\s+are\s+my\s+(?:recent\s+)?contacts/i ], execute: listContacts },
-  { intent: 'summarize_workspace', patterns: [ /(?:summarize|summary|overview|dashboard|stats|status)\s+(?:of\s+)?(?:my\s+)?(?:workspace|business|crm|pipeline|account)/i ], execute: summarizeWorkspace },
-  { intent: 'list_tasks', patterns: [ /(?:list|show|get|display)\s+(?:all\s+)?(?:my\s+)?tasks/i, /what\s+are\s+my\s+(?:pending\s+)?tasks/i ], execute: listTasks },
-  { intent: 'get_contact', patterns: [ /(?:get|show|display)\s+(?:contact\s+)?(\S+)\s+(?:details|info|profile)?/i, /lookup\s+(?:contact\s+)?(\S+)/i ], execute: getContact },
-  { intent: 'negotiate', patterns: [ /(?:advise|negotiate|should\s+i\s+counter|what\s+should\s+i\s+offer)(?:\s+on)?\s+(.+)/i, /negotiation\s+(?:advice|advisor)\s+(?:for|on)\s+(.+)/i ], execute: negotiate },
-  { intent: 'draft', patterns: [ /(?:draft|write|compose)\s+(?:an?\s+)?(email|sms|text|message|letter)\s+(?:to\s+\S+\s+)?(?:about|for|saying)\s+(.+)/i ], execute: draftContent },
-];
-
-// Maps numbered capture groups to named params per intent
-const GROUP_MAP: Record<string, string[]> = {
-  update_lead_stage: ['lead', 'stage'],
-  create_task: ['title', 'when'],
-  get_contact: ['id'],
-  negotiate: ['topic'],
-  draft: ['kind', 'topic'],
+const listLeads: ActionExecutor = async (ctx, params) => {
+  const status = (params['status'] || '').toUpperCase();
+  const leads = await prisma.lead.findMany({
+    where: { workspaceId: ctx.workspaceId, ...(status ? { status } : {}) },
+    orderBy: { createdAt: 'desc' },
+    take: 10,
+    include: { contact: { select: { firstName: true, lastName: true } } },
+  });
+  if (leads.length === 0) return { success: true, message: status ? `No ${status} leads yet.` : 'No leads yet.', data: [] };
+  const lines = leads.map((l) => `${l.contact.firstName} ${l.contact.lastName || ''} (${l.status})`.trim());
+  return { success: true, message: `${leads.length} newest${status ? ` ${status}` : ''} leads: ${lines.join('; ')}`, data: leads };
 };
 
-export function detectIntent(command: string): { intent: string; params: Record<string, string> } | null {
-  for (const rule of INTENT_RULES) {
-    for (const pattern of rule.patterns) {
-      const match = command.match(pattern);
-      if (match) {
-        const params: Record<string, string> = {};
-        const names = GROUP_MAP[rule.intent] || [];
-        for (let i = 1; i < match.length; i++) {
-          const value = match[i];
-          if (value && names[i - 1]) params[names[i - 1]] = value.trim();
-        }
-        return { intent: rule.intent, params };
-      }
-    }
-  }
-  return null;
-}
+const countHotLeads: ActionExecutor = async (ctx) => {
+  const [count, top] = await Promise.all([
+    prisma.lead.count({ where: { workspaceId: ctx.workspaceId, status: 'HOT' } }),
+    prisma.lead.findMany({
+      where: { workspaceId: ctx.workspaceId, status: 'HOT' },
+      orderBy: { updatedAt: 'desc' },
+      take: 3,
+      include: { contact: { select: { firstName: true, lastName: true } } },
+    }),
+  ]);
+  if (count === 0) return { success: true, message: 'You have 0 hot leads right now. Next step: work the newest leads and qualify them.', data: { count: 0 } };
+  const names = top.map((l) => `${l.contact.firstName} ${l.contact.lastName || ''}`.trim()).join(', ');
+  return {
+    success: true,
+    message: `You have ${count} hot lead${count === 1 ? '' : 's'}${names ? ` (most recent: ${names})` : ''}. Next step: call the most recent hot lead first, then log the outcome.`,
+    data: { count },
+  };
+};
+
+// Intent patterns live in ./intents (pure, unit-tested); this maps them to executors.
+const RULE_EXECUTORS: Record<string, ActionExecutor> = {
+  update_lead_stage: updateLeadStage,
+  create_task: createTask,
+  list_contacts: listContacts,
+  summarize_workspace: summarizeWorkspace,
+  list_tasks: listTasks,
+  get_contact: getContact,
+  negotiate,
+  draft: draftContent,
+};
 
 export async function executeCommand(command: string, ctx: AgentCoreContext, opts: { useLLMFallback?: boolean } = {}): Promise<AgentCoreResult> {
   const detected = detectIntent(command);
   if (detected) {
-    const rule = INTENT_RULES.find((r) => r.intent === detected.intent);
-    if (rule) {
-      const result = await rule.execute(ctx, detected.params);
-      return { ...result, intent: rule.intent, action: rule.intent };
+    const executor = RULE_EXECUTORS[detected.intent];
+    if (executor) {
+      const result = await executor(ctx, detected.params);
+      return { ...result, intent: detected.intent, action: detected.intent };
     }
   }
   if (opts.useLLMFallback) {
-    const completion = await callLLM(command, 'You are interpreting a natural-language CRM command. Respond with ONLY a JSON object: {"intent":"...","message":"..."} describing what action to take.');
-    if (completion) return { success: true, intent: 'llm_interpreted', message: completion, usedLLM: true };
+    const interpreted = await interpretWithLLM(command);
+    if (interpreted) {
+      const executor = INTERPRETED_EXECUTORS[interpreted.intent];
+      if (executor) {
+        const result = await executor(ctx, interpreted.params);
+        return { ...result, intent: interpreted.intent, action: interpreted.intent, usedLLM: true };
+      }
+      if (interpreted.intent === 'unknown') {
+        return { success: false, intent: 'unknown', message: interpreted.message || 'I did not understand that command.', usedLLM: true };
+      }
+    }
   }
   return { success: false, intent: 'unknown', message: 'I did not understand that command. Try:\n- "update lead [name] to hot"\n- "create a task to call John tomorrow"\n- "list contacts"\n- "summarize my workspace"' };
+}
+
+const INTERPRETED_EXECUTORS: Record<string, ActionExecutor> = {
+  summarize_workspace: summarizeWorkspace,
+  list_contacts: listContacts,
+  list_leads: listLeads,
+  count_hot_leads: countHotLeads,
+  list_tasks: listTasks,
+  get_contact: getContact,
+};
+
+async function interpretWithLLM(command: string) {
+  const completion = await callLLM(
+    command,
+    `You interpret natural-language CRM commands. Respond with ONLY a JSON object:
+{"intent": "<one of: ${INTERPRETED_INTENTS.join(', ')}>", "params": {"id": "<contact name if get_contact>", "status": "<lead status if list_leads>"}, "message": "<short note>"}
+Pick the closest intent. Use unknown when nothing fits.`,
+  );
+  return parseInterpretedIntent(completion);
 }

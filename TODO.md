@@ -131,8 +131,8 @@
 - [x] Reverse-merge: 14 stale feature branches fast-forwarded to main and pushed
 - [x] Version sync 0.47.0 â†’ 0.53.0 across VERSION.md / package.json / package-lock.json / CHANGELOG.md
 - [x] Un-ignore databases (dev.db, prisma/dev.db, metamcp.db, data/, audit*.jsonl) per retention policy
-- [ ] AgentCore: execute interpreted intents — LLM fallback currently returns the interpreted plan as text without running the underlying query (e.g. "how many hot leads" describes the query instead of answering it). Map top interpreted intents (count/list/summarize) to real executors; keep DeepSeek/OpenAI parity via the active-provider resolver.
-- [ ] AgentCore rule parser: possessive "my" is misread as a contact name ("show my pipeline summary" -> get_contact "my"). Strip possessives before name extraction.
+- [x] AgentCore: execute interpreted intents (done v0.67.17 — whitelist of read-only executors: summarize/list contacts/leads/tasks, count hot leads, get contact; writes stay rule-based).
+- [x] AgentCore rule parser: possessive "my" misread as a contact name (fixed v0.67.17 — determiner guard + summary phrasing route; intent logic extracted to lib/agentcore/intents.ts with tests).
 - [x] Regenerate submodule structural map in docs/LIBRARIES.md
 - [x] Update ROADMAP.md with completed Phase 2-12 features
 
