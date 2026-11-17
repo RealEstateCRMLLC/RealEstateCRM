@@ -1,3 +1,8 @@
+## v0.67.1 (2026-11-16)
+
+### Loop pass 3 - feature verification (docs)
+- Verified in browser: dark mode full cycle, Cmd-K palette navigation, Focused Section mode, print-media rendering. Prod mounts + webhook guards re-probed healthy. No code changes.
+
 ## v0.67.0 (2026-11-16)
 
 ### Loop pass 2 - mobile nav, settings dedup, webhook hardening
