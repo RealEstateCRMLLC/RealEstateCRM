@@ -1,3 +1,8 @@
+## v0.67.12 (2026-11-16)
+
+### Full MCP tool matrix verified (docs)
+- All 26 MCP tools across main CRM (9), aicrm (12), and LeadCaller (5) exercised live: reads, writes (with cleanup), gated voice actions, and honest not-configured/not-found degradations. No code changes.
+
 ## v0.67.11 (2026-11-16)
 
 ### LeadCaller voice tools over MCP (approval-gated)
