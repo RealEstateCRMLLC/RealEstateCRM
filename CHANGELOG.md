@@ -1,3 +1,9 @@
+## v0.67.15 (2026-11-16)
+
+### ContentPlanner auth sealed; mount outage recovered
+- Credentials login authenticated any known email with no password check (no password field exists) — now credentials succeed only via the gated local demo path; real users use GitHub OAuth. Fail-closed verified live (401). Sign-in redirect keeps the `/contentplanner` mount; dead demo button hidden in prod.
+- Incident: a failed build's stub tarball briefly took the mount down (~15 min); recovered via fixed rebuild (MD5-verified) and the packager now aborts on incomplete builds.
+
 ## v0.67.14 (2026-11-16)
 
 ### Chat consolidation + repo sanitization + docs refresh

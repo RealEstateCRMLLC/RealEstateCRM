@@ -1,6 +1,6 @@
 {
   "name": "real-estate-crm",
-  "version": "0.67.14",
+  "version": "0.67.15",
   "private": true,
   "scripts": {
     "predev": "node scripts/kill-port.js 3000",
