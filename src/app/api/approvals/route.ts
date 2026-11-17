@@ -92,15 +92,41 @@ export async function PATCH(request: NextRequest) {
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
+    const workspace = await prisma.workspace.findFirst({
+      where: { members: { some: { userId: session.user.id } } },
+      select: { id: true },
+    });
+    if (!workspace) return NextResponse.json({ error: 'No workspace' }, { status: 404 });
+
     const { id, action, notes } = body;
     if (!id || !action) return NextResponse.json({ error: 'id and action are required' }, { status: 400 });
 
-    const activity = await prisma.activity.findUnique({ where: { id } });
+    // Only two decisions exist. Anything else used to be uppercased
+    // straight into the stored status ("action: banana" -> "BANANA").
+    const decision = typeof action === 'string' ? action.toLowerCase() : '';
+    if (decision !== 'approve' && decision !== 'reject') {
+      return NextResponse.json({ error: 'action must be "approve" or "reject"' }, { status: 400 });
+    }
+
+    // Scope to the caller's workspace AND to approval activities: the
+    // old findUnique-by-id let any signed-in user rewrite any
+    // workspace's approval (or any other activity row) by id.
+    const activity = await prisma.activity.findFirst({
+      where: { id, workspaceId: workspace.id, type: 'APPROVAL' },
+    });
     if (!activity) return NextResponse.json({ error: 'Approval not found' }, { status: 404 });
 
     let content: any;
     try { content = JSON.parse(activity.content); } catch { content = { title: activity.content }; }
-    content.status = action.toUpperCase(); // APPROVED or REJECTED
+    // A decided approval is final; flipping APPROVED->REJECTED (or the
+    // reverse) after the fact rewrites the audit trail.
+    if (content.status && content.status !== 'PENDING') {
+      return NextResponse.json(
+        { error: 'Approval already decided', status: content.status },
+        { status: 409 },
+      );
+    }
+    content.status = decision === 'approve' ? 'APPROVED' : 'REJECTED';
     content.reviewedAt = new Date().toISOString();
     content.reviewedBy = session.user.id;
     if (notes) content.notes = notes;

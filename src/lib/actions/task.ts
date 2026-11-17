@@ -8,6 +8,14 @@ import { taskSchema, taskActionSchema, taskUpdateSchema } from '@/lib/validation
 import { AppRole, isAtLeastRole } from '@/lib/permissions';
 import { revalidatePath } from 'next/cache';
 
+// FormData.get() returns null for fields the form does not render
+// (AddTaskModal has no dueTime input). Zod .optional() accepts
+// undefined but NOT null, and zod v4 reports that as a bare
+// "Invalid input" — which silently broke every task creation.
+// Normalize all fields to string|undefined before validating.
+const str = (v: FormDataEntryValue | null): string | undefined =>
+  typeof v === 'string' ? v : undefined;
+
 export async function addTaskAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   const access = await requireWorkspaceAccess(session);
@@ -18,13 +26,13 @@ export async function addTaskAction(formData: FormData) {
   }
 
   const rawData = {
-    title: formData.get('title'),
-    description: formData.get('description'),
+    title: str(formData.get('title')),
+    description: str(formData.get('description')),
     status: formData.get('status') || 'TODO',
     workspaceId,
-    dueDate: formData.get('dueDate'),
-    dueTime: formData.get('dueTime'),
-    assignedToId: formData.get('assignedToId'),
+    dueDate: str(formData.get('dueDate')),
+    dueTime: str(formData.get('dueTime')),
+    assignedToId: str(formData.get('assignedToId')),
     triggerEmail: formData.get('triggerEmail') === 'true',
     triggerSMS: formData.get('triggerSMS') === 'true',
     triggerCall: formData.get('triggerCall') === 'true',
@@ -115,12 +123,12 @@ export async function updateTaskAction(formData: FormData) {
   }
 
   const rawData = {
-    taskId: formData.get('taskId'),
-    title: formData.get('title'),
-    description: formData.get('description'),
+    taskId: str(formData.get('taskId')),
+    title: str(formData.get('title')),
+    description: str(formData.get('description')),
     status: formData.get('status') || 'TODO',
-    dueDate: formData.get('dueDate'),
-    dueTime: formData.get('dueTime'),
+    dueDate: str(formData.get('dueDate')),
+    dueTime: str(formData.get('dueTime')),
     leadId: formData.get('leadId'),
   };
 
