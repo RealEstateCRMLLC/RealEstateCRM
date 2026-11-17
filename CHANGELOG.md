@@ -1,3 +1,8 @@
+## v0.67.16 (2026-11-16)
+
+### AgentCore live verification (docs)
+- NL commands run live through the switched OpenAI provider (interpretation 2.7s, usedLLM). Filed: LLM fallback interprets but does not yet execute queries; rule parser misreads possessive "my" as a contact name. One post-swap 504 was cold-start transient (re-ran 200).
+
 ## v0.67.15 (2026-11-16)
 
 ### ContentPlanner auth sealed; mount outage recovered
