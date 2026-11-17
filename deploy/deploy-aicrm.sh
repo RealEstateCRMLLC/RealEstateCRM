@@ -18,19 +18,34 @@ for f in .next server.js package.json node_modules public prisma; do
   [ -e "$f" ] && mv "$f" "$BK/" 2>/dev/null || true
 done
 
+# Preserve the live JWT_SECRET across redeploys: auth sessions are signed
+# with it, and the code's fallback value is public in the repo, so a fresh
+# write without it would silently re-expose forgeable sessions.
+JWT_LINE=""
+if [ -f "$BK/.env" ]; then
+  JWT_LINE=$(grep '^JWT_SECRET=' "$BK/.env" || true)
+fi
+if [ -f .env ] && [ -z "$JWT_LINE" ]; then
+  JWT_LINE=$(grep '^JWT_SECRET=' .env || true)
+fi
+
 tar xzf /tmp/deploy-aicrm.tar.gz
 
 # Prisma schema restore if the tarball lacks it (see deploy-leadg.sh note).
 mkdir -p prisma
 [ -f prisma/schema.prisma ] || cp "$BK/prisma/schema.prisma" prisma/ 2>/dev/null || true
 
-cat > .env << 'ENVEOF'
+cat > .env << ENVEOF
 DATABASE_URL="file:/var/www/aicrm/prisma/dev.db"
 NEXTAUTH_SECRET="excel-legacy-aicrm-secret-2026"
 NEXTAUTH_URL="https://excellegacyrealtygroup.site/aicrm"
 PORT=3218
 NODE_ENV=production
+$JWT_LINE
 ENVEOF
+if ! grep -q '^JWT_SECRET=' .env; then
+  echo "WARNING: JWT_SECRET missing after deploy - auth falls back to the public dev secret!"
+fi
 
 # Create/update the sqlite schema at the absolute deploy path (never ships
 # a local dev.db; the file is created/pushed in place on the server).

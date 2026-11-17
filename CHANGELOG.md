@@ -1,3 +1,9 @@
+## v0.67.2 (2026-11-16)
+
+### SECURITY: aicrm auth guard activated (was fully public)
+- `/aicrm/api/contacts` served contact PII unauthenticated: the JWT guard lived in `src/proxy.ts`, unrecognized on Next 15 (empty middleware manifest deployed). Renamed to `middleware.ts` + Turbopack root pin (aicrm dfb072c), deployed; set a real server-side `JWT_SECRET` (the fallback was public in-repo) and made deploy-aicrm.sh preserve it. Verified: APIs 401, pages 307 to /login, forged old-secret cookie rejected.
+- Tray audited + launch-tested; 404/stale-cookie/Esc/lead-detail paths verified; prod logs swept (benign noise; legacyleads Redis errors are other-lane).
+
 ## v0.67.1 (2026-11-16)
 
 ### Loop pass 3 - feature verification (docs)
