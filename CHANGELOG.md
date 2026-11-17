@@ -1,3 +1,10 @@
+## v0.67.26 (2026-11-17)
+
+### Foreclosure writes were all hitting the main CRM; AICRM stage moves silently no-opped
+- **Foreclosure (submodule): every client write went to the wrong app.** The Foreclosure app is mounted at `/foreclosure`, but 18 client fetches used root-absolute `/api/...`, which resolves to the main CRM — creating a lead, notes, tasks, SMS/email actions, sequence enroll, tags, documents, contacts, relatives, enrichment, CSV import, user management, and settings all received the main app's 401 and silently failed. The `apiUrl()` helper existed for exactly this (and LeadG already used it everywhere) but was wired into only 3 FC files. All 18 call sites now go through `apiUrl()`, with a regression test that walks the FC tree and fails on any root-absolute fetch. Verified in a real browser: Add Lead now creates the lead and lands on its detail page.
+- **AICRM (submodule): `update_lead_stage` silently did nothing.** It ignored the natural `stageName` argument and, given nothing it recognized, returned the unchanged lead with a success shape — even for a nonexistent stage. It now resolves stage names against the brokerage's pipeline stages (case-insensitive in code; the libsql datasource lacks Prisma's insensitive mode), validates status against the enum, verifies stage IDs, and errors clearly on a no-op update. Verified live: move to "Contacted" and back, bogus stage and empty update both error.
+- Foreclosure login itself is healthy (DB user + bcrypt; bootstrap credential correctly gated to non-production), and LeadG was audited clean for the same fetch disease (22 mount-aware calls, zero bare).
+
 ## v0.67.25 (2026-11-17)
 
 ### Deals + campaigns write paths verified; approvals views fixed
