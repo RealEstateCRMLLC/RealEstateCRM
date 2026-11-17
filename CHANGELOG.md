@@ -1,3 +1,8 @@
+## v0.67.20 (2026-11-16)
+
+### CRM servers registered in HyperNexus (docs)
+- All three CRM MCP servers registered in the kernel config: kernel search surfaces LeadCaller first for "call a lead". Live call proxying is not implemented in this kernel build, so direct MCP (find_tools/list_all_tools) remains the working path — HyperNexus as discovery accelerator, never a lock-in, per the BYO-AI principle.
+
 ## v0.67.19 (2026-11-16)
 
 ### LeadCaller MCP auth sealed + cross-server tool fan-out
