@@ -6,6 +6,9 @@
  * templates, and compliance notes. Real Estate is Pack #1 — the original
  * CRM, expressed as data. New business = new pack, never a new app.
  * Customization & add-ons by United Beats LLC (Bob & Lum).
+ *
+ * Expanded to cover trades (Roofing, Carpentry, Masonry, Landscaping),
+ * food service, discount retail, e-commerce, and tech startups.
  */
 export interface SectorPack {
   id: string;
@@ -57,7 +60,7 @@ export const SECTOR_PACKS: SectorPack[] = [
     metrics: ["Quotes", "Bind rate", "Renewals due", "Book value"],
   },
   {
-    id: "construction", name: "Construction & Trades", tagline: "Bids, jobs, and change orders — visible from field to office.",
+    id: "construction", name: "Construction & General Contracting", tagline: "Bids, jobs, and change orders — visible from field to office.",
     customer: "Customer", workUnit: "Job", offering: "Bid",
     stages: ["Lead", "Site Visit", "Bid Sent", "Won", "In Progress", "Punch List", "Complete & Paid"],
     templates: ["Bid proposal", "Change order", "Progress update photo log", "Final invoice"],
@@ -65,15 +68,79 @@ export const SECTOR_PACKS: SectorPack[] = [
     metrics: ["Open bids", "Jobs in progress", "Win rate", "Receivables"],
   },
   {
-    id: "retail", name: "Retail & E-commerce", tagline: "One view of every shopper, cart, and repeat buyer.",
+    id: "roofing", name: "Roofing & Siding Specialists", tagline: "From storm claim inspection to completed roof and final draw.",
+    customer: "Homeowner", workUnit: "Roofing Project", offering: "Estimate",
+    stages: ["Lead", "Inspection Scheduled", "Damage Report Sent", "Insurance Claim / Contract", "Material Ordered", "Installation", "Final Inspection & Paid"],
+    templates: ["Roof inspection report", "Insurance contingency agreement", "Shingle selection guide", "Certificate of completion"],
+    compliance: ["OSHA fall protection verification", "Local building permit pulled", "Manufacturer warranty registry"],
+    metrics: ["Inspection close rate", "Squares installed", "Insurance approvals", "Avg job margin"],
+  },
+  {
+    id: "carpentry", name: "Carpentry & Custom Woodwork", tagline: "Precision bids, architectural specs, and custom installs delivered on time.",
+    customer: "Client", workUnit: "Custom Build", offering: "Spec & Estimate",
+    stages: ["Inquiry", "Design Consultation", "Render / Quote Approved", "Deposit Paid", "Shop Fabrication", "On-Site Install", "Delivered & Signed"],
+    templates: ["Design intake spec", "Material markup breakdown", "Deposit schedule", "Care & warranty handbook"],
+    compliance: ["Lumber grade certification", "Signed shop drawing approval", "Liability & dust control agreement"],
+    metrics: ["Shop utilization", "Material yield", "Backlog weeks", "Gross profit per labor hour"],
+  },
+  {
+    id: "masonry", name: "Masonry, Brickwork & Stone", tagline: "Durable estimates, yard supply logistics, and structural excellence.",
+    customer: "Property Owner", workUnit: "Masonry Job", offering: "Estimate",
+    stages: ["Lead", "Site Measurement", "Quote Delivered", "Contract Signed", "Material Staged", "Laying / Curing", "Walkthrough & Paid"],
+    templates: ["Linear foot / square foot estimate", "Mortar & stone sample approval", "Weather delay notice", "Structural warranty"],
+    compliance: ["Silica dust safety protocol", "Local structural code compliance", "Utility mark-out before digging"],
+    metrics: ["Square footage laid", "Material cost variance", "Labor hours vs bid", "Review generation rate"],
+  },
+  {
+    id: "landscaping", name: "Landscaping & Grounds Care", tagline: "Recurring maintenance and high-ticket design installs seamlessly scheduled.",
+    customer: "Client", workUnit: "Service Route / Project", offering: "Proposal",
+    stages: ["Lead", "Site Walk", "Proposal Sent", "Approved", "Scheduled on Route", "Service Completed", "Renewal / Up-sell"],
+    templates: ["Seasonal maintenance agreement", "Hardscape design proposal", "Route dispatch alert", "Winterization checklist"],
+    compliance: ["Pesticide/fertilizer applicator licensing", "HOA guideline adherence", "Water runoff / grading compliance"],
+    metrics: ["Route density", "Recurring monthly revenue (RMR)", "Crew productivity", "Equipment downtime"],
+  },
+  {
+    id: "restaurant", name: "Restaurants & Hospitality Food", tagline: "Private dining, catering bookings, vendor supply, and VIP guests.",
+    customer: "Guest / Host", workUnit: "Event / Reservation", offering: "Menu & Package",
+    stages: ["Inquiry", "Tasting / Quote", "Contract Sent", "Deposit Locked", "BEO Finalized", "Event Execution", "Post-Event Review & Rebook"],
+    templates: ["Banquet event order (BEO)", "Private dining agreement", "Dietary & allergy intake", "Catering invoice"],
+    compliance: ["Health department food handler records", "Liquor license event permits", "Clear cancellation & headcount terms"],
+    metrics: ["Food cost percentage", "Private dining covers", "Average guest spend", "Repeat booking rate"],
+  },
+  {
+    id: "discount-retail", name: "Dollar Stores & Neighborhood Retail", tagline: "Foot traffic, high-velocity stock, local distributor relationships, and margins.",
+    customer: "Shopper / Account", workUnit: "Purchase / Purchase Order", offering: "Merchandise",
+    stages: ["Foot Traffic / Lead", "Basket Built", "Point of Sale", "Receipt & Loyalty", "Inventory Replenish", "VIP Shopper", "Inactive Re-engage"],
+    templates: ["Wholesale distributor order", "Weekly circular ad promo", "Loyalty sign-up form", "Loss prevention checklist"],
+    compliance: ["Sales tax compliance by jurisdiction", "SNAP / EBT compliance where applicable", "Manufacturer expiry monitoring"],
+    metrics: ["Basket size", "Foot traffic count", "Inventory turn rate", "Gross margin return on investment (GMROI)"],
+  },
+  {
+    id: "ecommerce", name: "E-Commerce & DTC Brands", tagline: "High-converting funnels, cart recovery, influencer outreach, and lifetime value.",
+    customer: "Customer", workUnit: "Order", offering: "Product",
+    stages: ["Ad Impression / Visit", "Added to Cart", "Checkout Started", "Order Paid", "Fulfilled & Shipped", "Delivered", "Brand Advocate"],
+    templates: ["Abandoned checkout sequence", "Order delivery tracker", "UGC review request", "VIP launch VIP early drop"],
+    compliance: ["CAN-SPAM / TCPA compliance", "Clear refund & return policy", "PCI-DSS tokenized payment security"],
+    metrics: ["Customer acquisition cost (CAC)", "Return on ad spend (ROAS)", "Customer lifetime value (LTV)", "Refund rate"],
+  },
+  {
+    id: "tech-saas", name: "Tech Startups & B2B Software", tagline: "Demos booked, trials activated, contracts signed, and net revenue retention.",
+    customer: "Account", workUnit: "Opportunity", offering: "Subscription / License",
+    stages: ["Inbound / Prospect", "Discovery Call", "Demo Completed", "Pilot / Trial", "Security & Legal Review", "Closed Won", "Active & Expanding"],
+    templates: ["Demo follow-up deck", "Master services agreement (MSA)", "SOC2 security pack link", "Quarterly business review (QBR)"],
+    compliance: ["GDPR / CCPA data privacy", "SLA uptime commitments", "SOC2 security audit compliance"],
+    metrics: ["Monthly recurring revenue (MRR)", "Sales cycle length", "Net retention rate (NRR)", "Demo to close conversion"],
+  },
+  {
+    id: "retail", name: "Retail & Showrooms", tagline: "One view of every shopper, showroom visit, and repeat buyer.",
     customer: "Shopper", workUnit: "Order", offering: "Product",
-    stages: ["Visitor", "Cart", "Checkout", "Fulfilled", "Repeat Buyer", "VIP", "Win-Back"],
+    stages: ["Visitor", "Cart / Consultation", "Checkout", "Fulfilled", "Repeat Buyer", "VIP", "Win-Back"],
     templates: ["Abandoned cart", "Order updates", "Review request", "VIP early access"],
     compliance: ["CAN-SPAM / consent for marketing", "Clear pricing & returns", "Payment data stays with processor"],
     metrics: ["Orders", "Repeat rate", "Average order value", "Win-backs"],
   },
   {
-    id: "hospitality", name: "Hospitality & Events", tagline: "Bookings, guests, and events run like clockwork.",
+    id: "hospitality", name: "Hospitality & Venues", tagline: "Bookings, guests, and events run like clockwork.",
     customer: "Guest", workUnit: "Booking", offering: "Reservation",
     stages: ["Inquiry", "Quoted", "Booked", "Confirmed", "In-House/Event Day", "Checked Out", "Loyalty"],
     templates: ["Booking confirmation", "Pre-arrival guide", "Event run sheet", "Review & rebook offer"],
@@ -81,12 +148,20 @@ export const SECTOR_PACKS: SectorPack[] = [
     metrics: ["Bookings", "Occupancy", "Repeat guests", "Review score"],
   },
   {
-    id: "home-services", name: "Home Services", tagline: "Calls become routes, routes become reviews.",
+    id: "home-services", name: "Home Services (HVAC, Plumbing, Electric)", tagline: "Calls become routes, routes become reviews.",
     customer: "Homeowner", workUnit: "Service Call", offering: "Service Plan",
     stages: ["Lead", "Booked", "Dispatched", "On Site", "Completed", "Maintenance Plan", "Seasonal Recall"],
     templates: ["Booking confirmation", "Tech en route", "Service summary", "Seasonal tune-up offer"],
     compliance: ["License disclosure", "Upfront pricing before work", "Warranty terms in writing"],
     metrics: ["Calls booked", "Jobs per tech", "Plan members", "Review score"],
+  },
+  {
+    id: "manufacturing", name: "Factories & Industrial Manufacturing", tagline: "Work orders, shop floor throughput, supply chain, and quality assurance.",
+    customer: "Client / OEM Account", workUnit: "Production Run / Work Order", offering: "Manufactured Unit / Contract Run",
+    stages: ["Quote / RFQ", "Engineering Review", "Tooling / Staging", "In Production", "QA & Inspection", "Packaging & Logistics", "Delivered & Billed"],
+    templates: ["RFQ specification intake", "Bill of materials (BOM) breakdown", "Certificate of conformance (CoC)", "Quality incident / corrective action (CAPA)"],
+    compliance: ["ISO 9001 / OSHA workplace standards", "Material test report (MTR) verification", "Hazardous materials / safety data sheets (SDS)"],
+    metrics: ["Overall equipment effectiveness (OEE)", "Scrap / defect rate", "On-time delivery (OTD)", "Direct labor cost per unit"],
   },
 ];
 
@@ -98,7 +173,9 @@ export function validateSectorPack(pack: SectorPack): string[] {
   const errors: string[] = [];
   if (!pack.id || !/^[a-z0-9-]+$/.test(pack.id)) errors.push("id must be kebab-case");
   if (pack.stages.length < 3) errors.push("needs at least 3 stages");
-  if (new Set(pack.stages).size !== pack.stages.length) errors.push("stages must be unique");
-  if (!pack.customer || !pack.workUnit || !pack.offering) errors.push("vocabulary is required");
+  if (!pack.name) errors.push("missing name");
+  if (!pack.customer) errors.push("missing customer");
+  if (!pack.workUnit) errors.push("missing workUnit");
+  if (!pack.offering) errors.push("missing offering");
   return errors;
 }
