@@ -24,8 +24,12 @@ import {
   saveStoredTenantRecord,
 } from "../src/lib/universal/tenant-store.ts";
 
-test("8 launch sector packs, all valid", () => {
-  assert.equal(SECTOR_PACKS.length, 8);
+import { getDigitalTeamForSector, DIGITAL_TEAM_ARCHETYPES } from "../src/lib/universal/digital-team.ts";
+import { SUPPORTED_AI_MODELS, executeUniversalAi } from "../src/lib/universal/ai-gateway.ts";
+import { calculateBusinessTruth } from "../src/lib/universal/market-oracle.ts";
+
+test("17 sector packs (launch, trades, retail, tech, manufacturing), all valid", () => {
+  assert.equal(SECTOR_PACKS.length, 17);
   for (const p of SECTOR_PACKS) assert.deepEqual(validateSectorPack(p), [], p.id);
 });
 
@@ -171,4 +175,76 @@ test("CommandCenter preserves 36/36 dashboard directory coverage and 100% card t
       `CommandCenter.tsx missing direct link to /dashboard/${dir}`,
     );
   }
+});
+
+test("Digital Second Team generates tailored 5-agent workforce for any trade or tech sector", () => {
+  assert.equal(DIGITAL_TEAM_ARCHETYPES.length, 5);
+
+  const roofingTeam = getDigitalTeamForSector("roofing", "Apex Roofing Pros");
+  assert.equal(roofingTeam.length, 5);
+  const atlas = roofingTeam.find((m) => m.profile.code === "concierge")!;
+  assert.ok(atlas.systemPrompt.includes("Roofing"));
+  assert.ok(atlas.systemPrompt.includes("Apex Roofing Pros"));
+  assert.equal(atlas.autonomy, "autonomous");
+
+  const techTeam = getDigitalTeamForSector("tech-saas", "CloudScale AI");
+  const vanguard = techTeam.find((m) => m.profile.code === "pipeline")!;
+  assert.ok(vanguard.sectorCustomization.title.includes("Opportunity"));
+
+  const restaurantTeam = getDigitalTeamForSector("restaurant", "Trattoria Milano");
+  const dispatch = restaurantTeam.find((m) => m.profile.code === "dispatch")!;
+  assert.ok(dispatch.sectorCustomization.title.includes("Restaurant"));
+});
+
+test("Universal AI Gateway exposes Meta Muse, Gemini, Claude, OpenAI and local models", async () => {
+  assert.ok(SUPPORTED_AI_MODELS.some((m) => m.provider === "meta-muse"));
+  assert.ok(SUPPORTED_AI_MODELS.some((m) => m.provider === "google-gemini"));
+  assert.ok(SUPPORTED_AI_MODELS.some((m) => m.provider === "local-ollama"));
+
+  const res = await executeUniversalAi({
+    providerId: "meta-muse",
+    systemPrompt: "You are Atlas for United Beats LLC.",
+    userPrompt: "Qualify a commercial roofing lead in Detroit.",
+  });
+  assert.equal(res.provider, "meta-muse");
+  assert.ok(res.text.includes("meta-muse"));
+});
+
+test("Market Oracle & Business Truth calculates unvarnished reality and flags bottlenecks", () => {
+  // Case A: Labor bottleneck (Goal $100k/mo, but 2 crews can only do 8 jobs @ $5k = $40k/mo)
+  const constrainedResult = calculateBusinessTruth({
+    businessName: "Titan Brickwork",
+    sectorId: "masonry",
+    currentMonthlyRevenue: 30000,
+    targetMonthlyRevenue: 100000,
+    timeframeMonths: 6,
+    averageDealValue: 5000,
+    historicalCloseRate: 0.20,
+    monthlyAdSpend: 1000,
+    activeLaborCapacityUnits: 2,
+    maxDealsPerUnitMonthly: 4,
+  });
+
+  assert.equal(constrainedResult.isViableWithCurrentCapacity, false);
+  assert.ok(constrainedResult.bottlenecksIdentified.some((b) => b.includes("Labor Fulfillment Bottleneck")));
+  assert.ok(constrainedResult.bottlenecksIdentified.some((b) => b.includes("Lead Acquisition Under-funding")));
+  assert.equal(constrainedResult.roadmap.length, 6);
+
+  // Case B: Well-capitalized and staffed operation
+  const viableResult = calculateBusinessTruth({
+    businessName: "Summit Roofing",
+    sectorId: "roofing",
+    currentMonthlyRevenue: 50000,
+    targetMonthlyRevenue: 80000,
+    timeframeMonths: 3,
+    averageDealValue: 10000,
+    historicalCloseRate: 0.30,
+    monthlyAdSpend: 10000,
+    activeLaborCapacityUnits: 4,
+    maxDealsPerUnitMonthly: 5,
+  });
+
+  assert.equal(viableResult.isViableWithCurrentCapacity, true);
+  assert.equal(viableResult.requiredMonthlyDeals, 8);
+  assert.ok(viableResult.unvarnishedTruthSummary.includes("mathematically reachable"));
 });

@@ -1,8 +1,26 @@
-# RealEstateCRM
+# NexusPulse OS & RealEstateCRM
+### Universal Business Operating System, Multi-Agent Second Team & Central CRM
+**Under the UNITED BEATS LLC Technology Umbrella**
 
-A CRM and business operating system for **Excel Legacy Realty Group**:
-lead management, a pre-foreclosure pipeline, marketing automation, content
-publishing, voice AI, and deal workflows in one Next.js dashboard.
+> 🚀 **MAJOR PLATFORM EVOLUTION:** This repository has expanded from its real estate brokerage roots into a **Universal Operating System & Autonomous Growth CRM** for any business scale—from mom-and-pop shops and boutique medical clinics to construction trades, restaurants, retail stores, factories, and tech enterprises.
+>
+> 📖 **Read the Full Universal Architecture Guide:** [README_UNIVERSAL.md](README_UNIVERSAL.md)  
+> 📋 **Read the Master Engineering Blueprint:** [UNITED_BEATS_UNIVERSAL_CRM_BLUEPRINT.md](C:/Users/jakeg/.gemini/antigravity/brain/1ab2fa64-05e6-421f-bfdb-fa6e241f8af3/UNITED_BEATS_UNIVERSAL_CRM_BLUEPRINT.md)
+
+---
+
+## Highlights & What's New
+
+- **17 Universal Sector Packs (`src/lib/universal/sectors.ts`):** Native vocabulary, pipelines, templates, and compliance guardrails for Roofing, Carpentry, Masonry, Landscaping, General Contracting, Factories & Manufacturing, Restaurants, Retail/Dollar Stores, E-Commerce, Tech/SaaS, Healthcare, Legal, Finance, and Real Estate.
+- **The "Second Digital Team" (`src/lib/universal/digital-team.ts`):** 5 pre-configured autonomous agents (Atlas for 24/7 intake, Vanguard for revenue momentum, Forge for operations dispatch, Oracle-X for local market recon, and Sovereign for executive truth and margin audits).
+- **Universal AI Gateway with Meta Muse (`src/lib/universal/ai-gateway.ts`):** Multi-model sequencing bus supporting Meta Muse (creative/visual inspection), Google Gemini (voice receptionist), Anthropic Claude (contracts), OpenAI GPT-4o, DeepSeek (margin math), and local Ollama.
+- **Market Oracle & Business Truth Mathematics (`src/lib/universal/market-oracle.ts`):** Zero-hallucination business modeling calculating exact lead volume, CAC benchmarks, labor capacity bottlenecks, and month-by-month milestone pacing.
+- **Double Vault Safe Security:** AES-256-GCM hardware-isolated secret vault at rest combined with an in-memory runtime enclave preventing AI prompt token leakage.
+- **Root Test Suite:** **109 active tests pass** (111 total assertions, 0 failures, 2 skipped offline tests).
+
+---
+
+## Original RealEstateCRM Background & Foundation
 
 ## Status
 

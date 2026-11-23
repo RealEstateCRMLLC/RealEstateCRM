@@ -88,18 +88,22 @@ export const authOptions: NextAuthOptions = {
         const universalAdminEmail =
           process.env.AUTH_UNIVERSAL_ADMIN_EMAIL?.trim() || 'admin@excellegacyrealtygroup.site';
         const universalAdminPassword = process.env.AUTH_UNIVERSAL_ADMIN_PASSWORD?.trim() || '';
-        if (universalAdminPassword && identifier === universalAdminEmail && password === universalAdminPassword) {
+        if (
+          universalAdminPassword &&
+          identifier.toLowerCase() === universalAdminEmail.toLowerCase() &&
+          password === universalAdminPassword
+        ) {
           return {
             id: 'universal-admin',
             name: 'Universal Admin',
-            email: 'admin@excellegacyrealtygroup.site',
+            email: universalAdminEmail,
             role: 'OWNER',
             workspaceSlug: DEFAULT_WORKSPACE_SLUG,
             workspaceId: DEFAULT_WORKSPACE_SLUG,
           } satisfies AuthUser;
         }
 
-        if (demoEmail && demoPassword && identifier === demoEmail && password === demoPassword) {
+        if (demoEmail && demoPassword && identifier.toLowerCase() === demoEmail.toLowerCase() && password === demoPassword) {
           return {
             id: 'demo-user',
             name: process.env.AUTH_DEMO_NAME ?? 'Excel Legacy Admin',
@@ -110,8 +114,14 @@ export const authOptions: NextAuthOptions = {
           } satisfies AuthUser;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: identifier },
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: identifier },
+              { email: identifier.toLowerCase() },
+              { email: identifier.toUpperCase() },
+            ],
+          },
           select: { id: true, name: true, email: true, role: true, passwordHash: true },
         });
 

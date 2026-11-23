@@ -266,9 +266,11 @@ export const ADD_ONS: AddOn[] = [
   { id: "ai-receptionist", name: "AI Receptionist (HyperNexus Voice)", blurb: "Answers, qualifies, and books in every language, 24/7.", priceMonthly: 149, sectors: "all", byUnitedBeats: true },
   { id: "trust-tsf", name: "Trust, Security & Future (TSF)", blurb: "Trust documents, taught course, and done-with-you assembly.", priceMonthly: 0, sectors: ["real-estate", "legal", "finance"], byUnitedBeats: true },
   { id: "review-engine", name: "Review & Referral Engine", blurb: "Automatic review requests and referral campaigns after every win.", priceMonthly: 49, sectors: "all", byUnitedBeats: true },
-  { id: "smart-scheduling", name: "Smart Scheduling & Routes", blurb: "Calendars, dispatch, and route planning for field teams.", priceMonthly: 79, sectors: ["construction", "home-services", "healthcare", "hospitality"], byUnitedBeats: true },
-  { id: "commerce-sync", name: "Commerce Sync", blurb: "Orders, carts, and inventory synced into the pipeline.", priceMonthly: 99, sectors: ["retail"], byUnitedBeats: true },
-  { id: "compliance-vault", name: "Compliance Vault", blurb: "Sector checklists, disclosures, and audit trails, always on.", priceMonthly: 129, sectors: ["healthcare", "legal", "finance"], byUnitedBeats: true },
+  { id: "smart-scheduling", name: "Smart Scheduling & Routes", blurb: "Calendars, dispatch, and route planning for field teams.", priceMonthly: 79, sectors: ["construction", "home-services", "healthcare", "hospitality", "roofing", "carpentry", "masonry", "landscaping", "manufacturing"], byUnitedBeats: true },
+  { id: "commerce-sync", name: "Commerce Sync", blurb: "Orders, carts, and inventory synced into the pipeline.", priceMonthly: 99, sectors: ["retail", "ecommerce", "discount-retail"], byUnitedBeats: true },
+  { id: "compliance-vault", name: "Compliance Vault", blurb: "Sector checklists, disclosures, and audit trails, always on.", priceMonthly: 129, sectors: ["healthcare", "legal", "finance", "tech-saas"], byUnitedBeats: true },
+  { id: "digital-team", name: "Digital Second Team (AI Agents)", blurb: "A 5-agent digital workforce: Concierge, Revenue, Dispatch, Oracle, and Truth Consultant.", priceMonthly: 199, sectors: "all", byUnitedBeats: true },
+  { id: "market-oracle", name: "Market Oracle & Business Truth", blurb: "Hyper-local geo demand, competitor intelligence, and unvarnished growth modeling.", priceMonthly: 149, sectors: "all", byUnitedBeats: true },
 ];
 
 export interface TenantBrand {
