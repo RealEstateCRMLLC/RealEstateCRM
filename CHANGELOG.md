@@ -1,3 +1,11 @@
+## v0.67.27 (2026-11-17)
+
+### LeadCaller + LeadG logins were broken; LeadG was inert for ~15s per page
+- **LeadCaller (submodule): nobody could sign in through the UI.** The root layout had no `SessionProvider`, so next-auth/react posted credentials to the domain-root (main CRM) auth routes and every login failed with "Invalid email or password" — while the same credentials worked against LeadCaller's own API. Added the mount-pinned provider (`/leadcaller/api/auth`), mirroring Foreclosure's earlier fix. Also: the globally-mounted web dialer fetched a Twilio token on every page including login (401 console errors); it now only fetches when signed in, and the expected "telephony not configured" state no longer console-errors. Verified: browser login reaches the dashboard with a clean console.
+- **LeadG (submodule): the whole app appeared dead for ~15 seconds per page.** Its layout loaded fonts from Google Fonts at runtime; that stylesheet took ~11s in-browser and a pending stylesheet blocks all script execution — pages rendered but never hydrated, so forms submitted natively (lead data went out as GET query strings) until the CSS arrived. Fonts are now self-hosted via `next/font` (build-time download, own origin); hydration is immediate. Same missing-`SessionProvider` login fix as LeadCaller. Verified: login reaches the dashboard; lead creation posts properly.
+- **LeadG lead detail crashed for every lead (React #438).** The page used the Next 15 `use(params)` Promise pattern on Next 14, where params is a plain object. Now reads params directly. Two more root-absolute template fetches in LeadG were also rewired to `apiUrl()`. Verified: the detail page renders contact, timeline, and actions with zero errors.
+- Note: LeadG's laptop build is blocked by a missing `@vapi-ai/web` package (npm registry unreachable from the laptop); this build was produced on Hetzner (source staged, deps installed, Prisma generated, built, deployed) — the established pattern for this app.
+
 ## v0.67.26 (2026-11-17)
 
 ### Foreclosure writes were all hitting the main CRM; AICRM stage moves silently no-opped
