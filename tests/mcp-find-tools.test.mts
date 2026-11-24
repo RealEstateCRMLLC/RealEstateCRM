@@ -7,8 +7,22 @@
  *************************************************/
 
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import assert from 'node:assert/strict';
 import { rankTools, matchSiblings } from '../src/lib/mcp/tool-catalog.ts';
+
+test('main log_activity validates its target lead before writing', () => {
+  const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'src/lib/mcp/server.ts'), 'utf8');
+  assert.match(src, /Lead "\$\{leadId\}" not found/, 'a bogus leadId must be a clean error, not a Prisma FK dump');
+});
+
+test('main get_contact errors on missing or nonexistent id', () => {
+  const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'src/lib/mcp/server.ts'), 'utf8');
+  assert.match(src, /get_contact requires a contact id/);
+  assert.match(src, /Contact "\$\{id\}" not found/);
+});
 
 const TOOLS = [
   { name: 'list_contacts', description: 'List contacts. Supports search and filtering.' },

@@ -28,6 +28,14 @@ test('update_lead_stage resolves stageName and never silently no-ops', () => {
   assert.match(src, /Invalid status/, 'status must be validated against the enum');
 });
 
+test('get_contact and log_activity can never widen an undefined id into a first-record answer', () => {
+  // Prisma treats an undefined where-field as "no filter": a missing
+  // id returned (or logged against) the tenant's FIRST contact.
+  assert.match(src, /get_contact requires a contact id/);
+  assert.match(src, /log_activity requires a contactId/);
+  assert.match(src, /Contact "\$\{id\}" not found/, 'a nonexistent contact must be an error, not null');
+});
+
 test('mcp executors resolve tenant from brokerage and never query Contact by brokerageId', () => {
   assert.match(src, /tenantIdFor\(session\)/, 'executors must resolve tenantId from the session brokerage');
   assert.doesNotMatch(src, /prisma\.contact\.(findMany|findFirst|create|count)\(\{\s*(where|data):\s*\{[^}]*brokerageId/, 'Contact queries must not use brokerageId');

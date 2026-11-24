@@ -66,7 +66,11 @@ async function main() {
     const sectors = json.catalog?.sectors?.length ?? 0;
     const langs = json.catalog?.languages?.length ?? 0;
     const addons = json.catalog?.addOns?.length ?? 0;
-    if (sectors !== 8 || langs !== 16) {
+    // Catalog pinned deliberately: 8 launch sectors until the FOOM
+    // merge (Protocol #336) expanded SECTOR_PACKS to 17. If this trips
+    // again, the catalog changed on purpose or by accident — decide
+    // which before bumping the number.
+    if (sectors !== 17 || langs !== 16) {
       throw new Error(`Unexpected catalog counts: sectors=${sectors}, langs=${langs}`);
     }
     return `sectors=${sectors}, languages=${langs}, addOns=${addons}, defaultSector=${json.resolved?.sector?.id}`;

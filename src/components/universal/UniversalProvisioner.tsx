@@ -39,6 +39,14 @@ import {
 
 export interface UniversalProvisionerProps {
   mode?: "public" | "workspace";
+  /**
+   * Whether owner-approved self-serve billing is armed
+   * (BILLING_CHECKOUT_ENABLED=true). Fail-closed: when not armed, NO
+   * prices render — the FOOM add-on price list is unapproved retail
+   * pricing, and billing governance (v0.66.1) forbids publishing
+   * unapproved SKUs. Parents compute this server-side.
+   */
+  billingArmed?: boolean;
 }
 
 const COLOR_PRESETS: { label: string; primary: string; accent: string }[] = [
@@ -69,7 +77,9 @@ function InfoTip({ text }: { text: string }) {
 
 export default function UniversalProvisioner({
   mode = "public",
+  billingArmed = false,
 }: UniversalProvisionerProps) {
+  const showPrices = billingArmed === true;
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [canManage, setCanManage] = useState(false);
@@ -516,7 +526,7 @@ export default function UniversalProvisioner({
                 <InfoTip text="Modular capabilities authored by United Beats LLC (Bob & Lum). Automatically filtered to add-ons relevant to the selected sector pack." />
               </span>
               <span className="text-xs font-bold text-primary">
-                Add-ons: ${monthlyTotal}/mo
+                {showPrices ? `Add-ons: $${monthlyTotal}/mo` : "Add-ons: pilot pricing"}
               </span>
             </div>
 
@@ -553,7 +563,9 @@ export default function UniversalProvisioner({
                     <span className="whitespace-nowrap text-xs font-bold text-foreground">
                       {addon.priceMonthly === 0
                         ? "Included"
-                        : `$${addon.priceMonthly}/mo`}
+                        : showPrices
+                          ? `$${addon.priceMonthly}/mo`
+                          : "Pilot pricing"}
                     </span>
                   </label>
                 );
@@ -703,7 +715,7 @@ export default function UniversalProvisioner({
                   {t(language.code, "monthlyAddOns")} ({enabledAddOns.length})
                 </span>
                 <span className="font-bold text-foreground">
-                  ${monthlyTotal}/mo add-ons • Custom pilot proposal
+                  {showPrices ? `$${monthlyTotal}/mo add-ons • Custom pilot proposal` : "Custom pilot proposal"}
                 </span>
               </div>
             </div>

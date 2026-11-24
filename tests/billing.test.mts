@@ -16,6 +16,22 @@ import {
   verifyStripeWebhookSignature,
 } from "../src/lib/billing/order-store.ts";
 import { escapeCsvCell, objectsToCsv, sanitizeCsvValue } from "../src/lib/csv-export.ts";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+test("universal pricing renders only when billing is armed (FOOM add-on list)", () => {
+  // The FOOM merge brought a public add-on price list ($49-$199/mo).
+  // Billing governance: unapproved retail prices stay unpublished
+  // until BILLING_CHECKOUT_ENABLED=true. Both render sites must gate.
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+  const page = readFileSync(join(root, "src/app/universal/page.tsx"), "utf8");
+  const provisioner = readFileSync(join(root, "src/components/universal/UniversalProvisioner.tsx"), "utf8");
+  assert.match(page, /isBillingCheckoutArmed\(\)/, "page must compute the armed state server-side");
+  assert.match(page, /billingArmed=\{billingArmed\}/, "page must pass the flag into the provisioner");
+  assert.match(provisioner, /billingArmed = false/, "provisioner must fail closed when the flag is absent");
+  assert.match(provisioner, /showPrices \? `Add-ons:/, "totals must be gated on the flag");
+});
 
 test("sync-scheduler resolveInternalAppUrl honors PORT=3210 on Hetzner and INTERNAL_APP_URL", () => {
   assert.equal(resolveInternalAppUrl({ NODE_ENV: "production" }), "http://127.0.0.1:3000");

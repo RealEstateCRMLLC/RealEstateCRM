@@ -55,7 +55,16 @@ const executors: Record<string, ToolExecutor> = {
     return prisma.contact.findMany({ where, take: Math.min(limit, 100), orderBy: { updatedAt: 'desc' } });
   },
   async get_contact(session, args) {
-    return prisma.contact.findFirst({ where: { id: args['id'] as string, workspaceId: session.workspaceId }, include: { leads: true, Activity: { orderBy: { createdAt: 'desc' }, take: 20 } } });
+    // A missing id must never reach the query: Prisma treats undefined
+    // as "no filter", which would return the workspace's first contact
+    // for a bogus id. And a nonexistent id is an error, not null.
+    const id = (args['id'] ?? args['contactId']) as string;
+    if (!id || typeof id !== 'string') {
+      throw new Error('get_contact requires a contact id');
+    }
+    const contact = await prisma.contact.findFirst({ where: { id, workspaceId: session.workspaceId }, include: { leads: true, Activity: { orderBy: { createdAt: 'desc' }, take: 20 } } });
+    if (!contact) throw new Error(`Contact "${id}" not found`);
+    return contact;
   },
   async create_contact(session, args) {
     return prisma.contact.create({ data: { workspaceId: session.workspaceId, firstName: args['firstName'] as string, lastName: args['lastName'] as string, email: (args['email'] as string) || null, phone: (args['phone'] as string) || null } });
@@ -93,7 +102,14 @@ const executors: Record<string, ToolExecutor> = {
     ] }, take: 25 });
   },
   async log_activity(session, args) {
-    return prisma.activity.create({ data: { type: (args['type'] as string) || 'NOTE', content: args['description'] as string, userId: session.userId, workspaceId: session.workspaceId, leadId: (args['leadId'] as string) || null } });
+    // Validate the target lead first: creating against a bogus id
+    // used to surface a raw Prisma FK dump instead of a clean error.
+    const leadId = (args['leadId'] as string) || null;
+    if (leadId) {
+      const lead = await prisma.lead.findFirst({ where: { id: leadId, workspaceId: session.workspaceId }, select: { id: true } });
+      if (!lead) throw new Error(`Lead "${leadId}" not found`);
+    }
+    return prisma.activity.create({ data: { type: (args['type'] as string) || 'NOTE', content: args['description'] as string, userId: session.userId, workspaceId: session.workspaceId, leadId } });
   },
   async list_all_tools(_session) {
     const servers: Record<string, unknown> = {

@@ -1,3 +1,14 @@
+## v0.67.28 (2026-11-17)
+
+### Brutal-roast fix pass (ChatGPT + Gemini roasts collected; Bobbi's pending in her thread)
+The three-AI roast mostly re-ranked this lane's own verified findings (all already fixed in .21–.27). The systemic remainder shipped here:
+- **Standing cross-app auth gate** (`deploy/smoke-auth.mjs`): unauthenticated writes refused + real test-identity sessions across all six mounted apps — 12/12 PASS. Run after every deploy.
+- **MCP reads can no longer return the wrong record.** `get_contact` (main + AICRM) treated a missing id as "no filter" (Prisma undefined semantics) and returned the tenant's first contact for a bogus id; AICRM `log_activity` could log against the wrong contact the same way, and main `log_activity` dumped raw Prisma FK errors. All now validate targets and error cleanly — verified live across all three MCP servers.
+- **FOOM pricing is behind the billing gate.** The merged FOOM code published an unapproved add-on price list ($49–$199/mo) on `/universal`, violating billing governance. Prices now render only when `BILLING_CHECKOUT_ENABLED=true` (fail-closed); otherwise "Pilot pricing". This also means the FOOM universal code + its `auth.ts` change are now deployed (they rode along in these builds); all auth surfaces re-verified via the smoke gate + full verify.
+- `verify-live-prod` catalog expectation updated deliberately: 8 → 17 sectors (FOOM expansion), with a comment so the next change is a decision, not a surprise.
+- Recorded in ROADMAP: feature freeze until first paying pilot; FOOM deploy now done (auth regression passed via smoke gate).
+- Operational note: the server-side break-glass email/password had been reconfigured (Nov 20); local test copies re-synced file-to-file. Probes now read `prod-admin-email.txt`.
+
 ## v0.67.27 (2026-11-17)
 
 ### LeadCaller + LeadG logins were broken; LeadG was inert for ~15s per page

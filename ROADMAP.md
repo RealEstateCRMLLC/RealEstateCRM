@@ -211,6 +211,14 @@ Trust, Security & Future (TSF) Master Bundle live on /trust-services: realtor-te
 - [x] Added server-side 12-service TCP health probe (`/api/system/health`) + upgraded `ServiceHealthGrid`, `build-all.ps1` (10 targets), `start-all.ps1` / `start-all.bat` (12 services at `BelowNormal`), `watch-services.ps1`, and non-blocking `system-tray.ps1` (GDI handle leak fixed, single-pass `netstat`).
 - [x] Fixed runtime Prisma/import bugs discovered during deep audit (`MyPlusImportModal` missing `importCsvAction`, `/api/posts` `isPublished` field mismatch, `myPlusLeadsIntegration.findFirst` unique-key fix, `tsconfig.json` submodule exclusion).
 
+## Post-roast hardening (2026-11-17, from the ChatGPT/Gemini/Bobbi brutal-roast review)
+The three-AI roast converged on systemic items beyond individual bugs. Standing decisions from it:
+- [x] Cross-app auth smoke gate (`deploy/smoke-auth.mjs`): unauthenticated-write refusals + real test-identity sessions for all six mounted apps; run after every deploy. (v0.67.28)
+- [x] MCP mutation integrity: every write tool validates its target exists and errors on no-ops; reads error on nonexistent ids instead of returning null or the wrong record. (v0.67.24-28)
+- [ ] Deploy FOOM/universal merge with a dedicated auth regression pass (it touches `src/lib/auth.ts`); do not fold into routine swaps.
+- [ ] FREEZE new sub-apps/features until first paying pilot closes. Consolidation candidates when unfrozen: CP nav/mount honesty, duplicate workflows already merged; sector arms stay PARKED until real-estate revenue (unchanged 90-day rule).
+- [ ] Commercial validation before expansion: Hank signature, then exactly the Tier-1 integrations the pilot needs (Phase 17), in that order.
+
 ## Phase 18 — HyperNexus MCP Router + Sector Arms (BYO-AI) [IN PROGRESS]
 Core (built once): HyperNexus as MCP router — drops the exact tool to whichever AI is talking, shifts gears between LLMs, cross-LLM memory (its brain in a sub-file/store), so swapping models loses nothing. CRM exposes functions as MCP tools; the realtor connects ANY LLM service (ChatGPT, Gemini, Claude, ...) and drives the CRM by voice/text — plug-and-play inference, no wiring ritual.
 - [x] Provider switching v1 (v0.67.10): Settings → AI Model Keys "Active AI Provider" (OpenAI/Anthropic/Gemini/DeepSeek/Qwen) + one resolver (`lib/ai/active-provider.ts`) used by AgentCore + lead scoring; verified live with a real completion.

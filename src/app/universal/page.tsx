@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SECTOR_PACKS } from "@/lib/universal/sectors";
 import { LANGUAGES, ADD_ONS, t } from "@/lib/universal/platform";
 import UniversalProvisioner from "@/components/universal/UniversalProvisioner";
+import { isBillingCheckoutArmed } from "@/lib/billing/checkout";
 
 export const metadata: Metadata = {
   title: "Universal CRM for Every Business | United Beats LLC on HyperNexus",
@@ -12,6 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default function UniversalPage() {
+  // Billing governance: unapproved retail prices stay unpublished
+  // until the owner arms self-serve billing. The FOOM add-on list
+  // carries prices; render them only when armed.
+  const billingArmed = isBillingCheckoutArmed();
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section className="border-b-4 border-secondary bg-accent text-accent-foreground">
@@ -48,7 +53,7 @@ export default function UniversalPage() {
               languages (including automatic right-to-left Arabic), and toggle United Beats LLC add-ons.
             </p>
           </div>
-          <UniversalProvisioner mode="public" />
+          <UniversalProvisioner mode="public" billingArmed={billingArmed} />
         </section>
 
         <section>
@@ -80,7 +85,7 @@ export default function UniversalPage() {
             {ADD_ONS.map((a) => (
               <div key={a.id} className="flex flex-wrap items-baseline justify-between gap-2 border border-border p-4">
                 <div><p className="font-bold">{a.name}</p><p className="text-sm text-muted-foreground">{a.blurb}</p></div>
-                <p className="font-bold">{a.priceMonthly === 0 ? "Included in sector" : `$${a.priceMonthly}/mo`}</p>
+                <p className="font-bold">{a.priceMonthly === 0 ? "Included in sector" : billingArmed ? `$${a.priceMonthly}/mo` : "Pilot pricing"}</p>
               </div>
             ))}
           </div>
