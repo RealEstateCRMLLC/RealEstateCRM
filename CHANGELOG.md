@@ -1,3 +1,13 @@
+## v0.67.29 (2026-11-17)
+
+### Sixteen internal APIs gated (external probe found them open)
+An independent re-probe (Bobbi) found the flagship still answering anonymous callers on a batch of data routes the earlier sweeps never covered — and she was right, re-verified live before fixing. All now require an authenticated workspace session, scoped to the caller's workspace:
+- **Data leaks closed:** `/api/scoring` (full scored lead list with names), `/api/gamification` (staff names/emails), `/api/reporting`, `/api/data-quality`, `/api/search-alerts` (lead names/emails), `/api/client-portal` list (contact details).
+- **Write surfaces closed:** audit-entry forging (`/api/audit` POST), voice API-key overwrite (`/api/voice-settings` PUT), S3 presign minting (`/api/uploads`), folder config + filesystem scans (`/api/folder-detection`), and full CRUD on `/api/offers`, `/api/partners`, `/api/referrals`, `/api/objections`, `/api/partner-permissions`, `/api/websites` (list/create/edit), `/api/client-portal` create.
+- **One write path could never work:** partner-permissions PUT used an invalid Prisma upsert (no unique key) and always threw — replaced with find-then-write.
+- **Kept public by design (disclosed, not accidental):** `/api/listings`, `/api/idx` (published listing feeds), `/api/syndication` (documented anonymized cross-market aggregates), `/api/websites?slug=` (published sites), `/api/client-portal?token=` (client magic-link flow; invalid token 404s).
+- The smoke gate now covers all of it: 32/32 (anonymous refusals + public exceptions + real sessions on all six apps). Authenticated dashboard callers verified unaffected.
+
 ## v0.67.28 (2026-11-17)
 
 ### Brutal-roast fix pass (ChatGPT + Gemini roasts collected; Bobbi's pending in her thread)

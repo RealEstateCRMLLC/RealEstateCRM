@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// Folder config reveals server paths and POST triggers filesystem
+// scans: authenticated workspace session required. This answered
+// (and scanned) anonymously.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 /**
  * Folder Detection Service
@@ -14,6 +30,11 @@ import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
  * - Desktop
  */
 export async function GET(request: NextRequest) {
+  try {
+    await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   const { searchParams } = new URL(request.url);
   const source = searchParams.get('source') || 'all';
 
@@ -35,6 +56,12 @@ export async function GET(request: NextRequest) {
  * POST: Trigger a folder scan for new files.
  */
 export async function POST(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   let body;
     try {
       body = await request.json();
@@ -92,7 +119,7 @@ export async function POST(request: NextRequest) {
       data: {
         type: 'FOLDER_SCAN',
         content: JSON.stringify({ source, folder, filesFound: newFiles.length, timestamp: new Date().toISOString() }),
-        workspaceId: workspaceId || DEFAULT_WORKSPACE_SLUG,
+        workspaceId: access.workspaceId,
       },
     });
 

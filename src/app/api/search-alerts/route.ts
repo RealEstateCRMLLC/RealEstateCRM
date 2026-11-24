@@ -1,5 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// Alerts expose lead names/emails and are writable: authenticated
+// workspace session required, scoped through the lead's workspace.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 /**
  * Search Alerts API
@@ -9,11 +25,17 @@ import prisma from '@/lib/prisma';
  * DELETE: remove an alert.
  */
 export async function GET(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   const { searchParams } = new URL(request.url);
   const leadId = searchParams.get('leadId');
   const activeOnly = searchParams.get('active') === 'true';
 
-  const where: Record<string, unknown> = {};
+  const where: Record<string, unknown> = { lead: { workspaceId: access.workspaceId } };
   if (leadId) where.leadId = leadId;
   if (activeOnly) where.isActive = true;
 
@@ -48,6 +70,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   let body;
   try {
     body = await request.json();
@@ -62,7 +90,7 @@ export async function POST(request: NextRequest) {
 
   // FK validation — leadId must reference an existing Lead or Prisma throws P2003 → 500
   const lead = await prisma.lead.findUnique({ where: { id: leadId } });
-  if (!lead) {
+  if (!lead || lead.workspaceId !== access.workspaceId) {
     return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
   }
 
@@ -79,10 +107,21 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   if (!id) {
     return NextResponse.json({ error: 'id required' }, { status: 400 });
+  }
+
+  const alert = await prisma.searchAlert.findUnique({ where: { id }, include: { lead: { select: { workspaceId: true } } } });
+  if (!alert || alert.lead.workspaceId !== access.workspaceId) {
+    return NextResponse.json({ error: 'Alert not found' }, { status: 404 });
   }
 
   await prisma.searchAlert.delete({ where: { id } });

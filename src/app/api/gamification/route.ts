@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// Staff leaderboard (names + emails) and point awards are workspace
+// data: authenticated session required. This answered anonymously.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 /**
  * Gamification Engine
@@ -29,8 +44,14 @@ const POINTS: Record<string, number> = {
 };
 
 export async function GET(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   const { searchParams } = new URL(request.url);
-  const workspaceId = searchParams.get('workspaceId') || DEFAULT_WORKSPACE_SLUG;
+  const workspaceId = access.workspaceId;
   const period = searchParams.get('period') || 'all'; // all, month, week
 
   const since = period === 'week' ? new Date(Date.now() - 7 * 86400000)
@@ -97,6 +118,12 @@ export async function GET(request: NextRequest) {
  * POST: Award points for a specific action.
  */
 export async function POST(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   let body;
     try {
       body = await request.json();
@@ -119,7 +146,7 @@ export async function POST(request: NextRequest) {
       type: 'GAMIFICATION',
       content: JSON.stringify({ action, points, metadata: metadata || {} }),
       userId,
-      workspaceId: workspaceId || DEFAULT_WORKSPACE_SLUG,
+      workspaceId: access.workspaceId,
     },
   });
 

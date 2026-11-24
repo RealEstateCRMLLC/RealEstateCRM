@@ -77,6 +77,31 @@ for (const [label, path, payload] of unauthWrites) {
   check('unauth leadcaller mcp (SSE)', r.status === 401, `got ${r.status}`);
 }
 
+// 1b. The Nov-2026 batch: internal data GETs must refuse anonymous
+// callers (they served lead names, staff emails, server paths, API
+// keys, audit trails). Public-by-design exceptions are asserted
+// separately below.
+const unauthGets = [
+  'scoring', 'gamification', 'reporting', 'data-quality', 'folder-detection',
+  'audit', 'voice-settings', 'objections', 'offers', 'partners', 'referrals',
+  'search-alerts', 'partner-permissions', 'websites', 'client-portal', 'uploads',
+];
+for (const name of unauthGets) {
+  const r = await fetch(`${ORIGIN}/api/${name}`);
+  check(`unauth GET ${name}`, r.status === 401, `got ${r.status}`);
+}
+// Public by design: listing feeds + anonymized syndication + the
+// token-based client portal branch (invalid token -> 404, not data).
+for (const [label, path, expect] of [
+  ['listings public', '/api/listings', 200],
+  ['idx public', '/api/idx', 200],
+  ['syndication public (anonymized)', '/api/syndication', 200],
+  ['client-portal invalid token 404', '/api/client-portal?token=smoke-invalid-token', 404],
+]) {
+  const r = await fetch(ORIGIN + path);
+  check(label, r.status === expect, `got ${r.status}`);
+}
+
 // 2. Test identities can establish sessions.
 {
   const main = await nextAuthLogin(ORIGIN, 'email', adminEmail, adminPw);

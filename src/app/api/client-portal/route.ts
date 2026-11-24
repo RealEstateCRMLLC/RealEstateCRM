@@ -1,5 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// Token-based portal access (below) is the public client flow and
+// stays open. Listing all portals and creating them are workspace
+// operations: authenticated session required. The list previously
+// exposed every portal with contact details anonymously.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -26,8 +44,14 @@ export async function GET(request: NextRequest) {
   }
 
   const workspaceId = searchParams.get('workspaceId');
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   const portals = await prisma.clientPortal.findMany({
-    where: { ...(workspaceId && { workspaceId }), isActive: true },
+    where: { workspaceId: access.workspaceId, isActive: true },
     include: { contact: true },
     orderBy: { createdAt: 'desc' },
   });
@@ -35,21 +59,27 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   let body;
     try {
       body = await request.json();
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
-  const { contactId, title, expiresAt, workspaceId } = body;
+  const { contactId, title, expiresAt } = body;
 
-  if (!contactId || !workspaceId) {
-    return NextResponse.json({ error: 'contactId and workspaceId required' }, { status: 400 });
+  if (!contactId) {
+    return NextResponse.json({ error: 'contactId required' }, { status: 400 });
   }
 
   const portal = await prisma.clientPortal.create({
     data: {
-      contactId, title, workspaceId,
+      contactId, title, workspaceId: access.workspaceId,
       expiresAt: expiresAt ? new Date(expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     },
   });

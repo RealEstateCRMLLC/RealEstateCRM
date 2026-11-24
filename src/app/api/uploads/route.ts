@@ -1,12 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// Document uploads mint presigned S3 URLs: authenticated workspace
+// session required. This minted them anonymously.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 /**
  * AWS S3 Document Upload for Leads/Contacts.
  * Supports: presigned URL generation, direct upload, document metadata tracking.
  */
 export async function POST(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   let body;
     try {
       body = await request.json();
@@ -21,11 +42,11 @@ export async function POST(request: NextRequest) {
 
   if (leadId) {
     const lead = await prisma.lead.findUnique({ where: { id: leadId } });
-    if (!lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+    if (!lead || lead.workspaceId !== access.workspaceId) return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
   }
   if (contactId) {
     const contact = await prisma.contact.findUnique({ where: { id: contactId } });
-    if (!contact) return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
+    if (!contact || contact.workspaceId !== access.workspaceId) return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
   }
 
   const AWS_BUCKET = process.env.AWS_S3_BUCKET;
@@ -44,7 +65,7 @@ export async function POST(request: NextRequest) {
         credentials: { accessKeyId: AWS_ACCESS_KEY, secretAccessKey: AWS_SECRET_KEY },
       });
 
-      const key = `documents/${workspaceId || 'default'}/${Date.now()}-${fileName}`;
+      const key = `documents/${access.workspaceId}/${Date.now()}-${fileName}`;
       const command = new PutObjectCommand({
         Bucket: AWS_BUCKET,
         Key: key,
@@ -64,7 +85,7 @@ export async function POST(request: NextRequest) {
           }),
           leadId: leadId || null,
           contactId: contactId || null,
-          workspaceId: workspaceId || DEFAULT_WORKSPACE_SLUG,
+          workspaceId: access.workspaceId,
         },
       });
 
@@ -91,7 +112,7 @@ export async function POST(request: NextRequest) {
       }),
       leadId: leadId || null,
       contactId: contactId || null,
-      workspaceId: workspaceId || DEFAULT_WORKSPACE_SLUG,
+      workspaceId: access.workspaceId,
     },
   });
 
@@ -106,10 +127,16 @@ export async function POST(request: NextRequest) {
  * GET: List documents for a lead or contact.
  */
 export async function GET(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   const { searchParams } = new URL(request.url);
   const leadId = searchParams.get('leadId');
   const contactId = searchParams.get('contactId');
-  const workspaceId = searchParams.get('workspaceId') || DEFAULT_WORKSPACE_SLUG;
+  const workspaceId = access.workspaceId;
 
   const where: any = { workspaceId, type: 'DOCUMENT' };
   if (leadId) where.leadId = leadId;

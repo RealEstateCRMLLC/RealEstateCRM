@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// This API reads and writes lead data, so it requires an authenticated
+// workspace session like every other CRM data route. It previously
+// answered anonymous callers with the workspace's full scored lead
+// list (names included) — found by external probe, Nov 2026.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 /**
  * Predictive Lead Scoring
@@ -8,6 +25,12 @@ import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
  * and behavioral patterns to predict lead conversion probability.
  */
 export async function POST(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   let body;
     try {
       body = await request.json();
@@ -28,7 +51,7 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  if (!lead) {
+  if (!lead || lead.workspaceId !== access.workspaceId) {
     return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
   }
 
@@ -48,7 +71,7 @@ export async function POST(request: NextRequest) {
       type: 'AI_SCORE',
       content: JSON.stringify(prediction),
       leadId: leadId,
-      workspaceId: workspaceId || lead.workspaceId,
+      workspaceId: access.workspaceId,
     },
   });
 
@@ -56,8 +79,13 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const workspaceId = searchParams.get('workspaceId') || DEFAULT_WORKSPACE_SLUG;
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
+  const workspaceId = access.workspaceId;
 
   const leads = await prisma.lead.findMany({
     where: { workspaceId },

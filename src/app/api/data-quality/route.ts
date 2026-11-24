@@ -1,14 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// Record-completeness analysis reads contact/lead fields workspace-
+// wide: authenticated session required. This answered anonymously.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 /**
  * Data Quality API
  * Analyzes records for completeness, accuracy, and consistency.
  */
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const workspaceId = searchParams.get('workspaceId') || DEFAULT_WORKSPACE_SLUG;
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
+  const workspaceId = access.workspaceId;
 
   const [leads, contacts, listings] = await Promise.all([
     prisma.lead.findMany({

@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// The audit trail is the record of who did what: reading it and
+// (especially) writing entries both require an authenticated
+// workspace session. Anonymous POSTs could forge audit entries.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 /**
  * Audit Trail API
@@ -9,8 +25,14 @@ import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
  * POST: record an audit entry.
  */
 export async function GET(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   const { searchParams } = new URL(request.url);
-  const workspaceId = searchParams.get('workspaceId') || DEFAULT_WORKSPACE_SLUG;
+  const workspaceId = access.workspaceId;
   const entityType = searchParams.get('entityType');
   const entityId = searchParams.get('entityId');
   const action = searchParams.get('action');
@@ -55,6 +77,12 @@ export async function GET(request: NextRequest) {
  * Called internally after any data mutation.
  */
 export async function POST(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   let body;
   try {
     body = await request.json();
@@ -72,8 +100,8 @@ export async function POST(request: NextRequest) {
       action,
       entityType,
       entityId: entityId || null,
-      userId: userId || null,
-      workspaceId: workspaceId || DEFAULT_WORKSPACE_SLUG,
+      userId: userId || access.userId,
+      workspaceId: access.workspaceId,
       ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
       userAgent: request.headers.get('user-agent') || 'unknown',
       changes: changes ? JSON.stringify(changes) : null,

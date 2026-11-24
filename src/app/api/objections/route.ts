@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// Knowledge-base reads/writes are workspace data: authenticated
+// session required. This answered anonymously.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 /**
  * RAG Objection Handling
@@ -9,6 +24,12 @@ import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
  * Embeds successful closings, retrieves top 3 objection responses.
  */
 export async function POST(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   let body;
     try {
       body = await request.json();
@@ -24,7 +45,7 @@ export async function POST(request: NextRequest) {
   // Search for similar objection responses in knowledge base
   const activities = await prisma.activity.findMany({
     where: {
-      workspaceId: workspaceId || DEFAULT_WORKSPACE_SLUG,
+      workspaceId: access.workspaceId,
       type: { in: ['OBJECTION_RESPONSE', 'CLOSING_SCRIPT', 'KNOWLEDGE'] },
     },
     orderBy: { createdAt: 'desc' },
@@ -68,8 +89,14 @@ export async function POST(request: NextRequest) {
  * GET: Browse objection responses in the knowledge base.
  */
 export async function GET(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   const { searchParams } = new URL(request.url);
-  const workspaceId = searchParams.get('workspaceId') || DEFAULT_WORKSPACE_SLUG;
+  const workspaceId = access.workspaceId;
   const category = searchParams.get('category');
 
   const where: any = {

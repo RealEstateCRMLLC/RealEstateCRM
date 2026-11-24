@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
+import { authOptions } from '@/lib/auth';
+import { requireWorkspaceAccess, workspaceErrorResponse } from '@/lib/workspace-access';
+
+// Voice provider config includes API keys: authenticated workspace
+// session required for reads and (especially) writes. The PUT
+// previously let anonymous callers overwrite the workspace's keys.
+async function requireAccess() {
+  const session = await getServerSession(authOptions);
+  return requireWorkspaceAccess(session);
+}
+
+function accessError(e: unknown) {
+  const mapped = workspaceErrorResponse(e);
+  if (mapped) return mapped;
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
 /**
  * Voice Settings API
@@ -9,8 +25,13 @@ import { DEFAULT_WORKSPACE_SLUG } from '@/lib/workspace-context';
  * PUT: upsert settings.
  */
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const workspaceId = searchParams.get('workspaceId') || DEFAULT_WORKSPACE_SLUG;
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
+  const workspaceId = access.workspaceId;
 
   const settings = await prisma.voiceSettings.findUnique({ where: { workspaceId } });
 
@@ -29,6 +50,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  let access;
+  try {
+    access = await requireAccess();
+  } catch (e) {
+    return accessError(e);
+  }
   let body;
   try {
     body = await request.json();
@@ -36,8 +63,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { workspaceId, provider, elevenLabsApiKey, elevenLabsVoiceId, openAiApiKey, openAiVoiceId } = body;
-  const wsId = workspaceId || DEFAULT_WORKSPACE_SLUG;
+  const { provider, elevenLabsApiKey, elevenLabsVoiceId, openAiApiKey, openAiVoiceId } = body;
+  const wsId = access.workspaceId;
 
   // FK validation — workspaceId must exist or upsert create path throws P2003 → 500
   const workspace = await prisma.workspace.findUnique({ where: { id: wsId } });
