@@ -7,6 +7,7 @@ An independent re-probe (Bobbi) found the flagship still answering anonymous cal
 - **One write path could never work:** partner-permissions PUT used an invalid Prisma upsert (no unique key) and always threw — replaced with find-then-write.
 - **Kept public by design (disclosed, not accidental):** `/api/listings`, `/api/idx` (published listing feeds), `/api/syndication` (documented anonymized cross-market aggregates), `/api/websites?slug=` (published sites), `/api/client-portal?token=` (client magic-link flow; invalid token 404s).
 - The smoke gate now covers all of it: 32/32 (anonymous refusals + public exceptions + real sessions on all six apps). Authenticated dashboard callers verified unaffected.
+- **Verification-only follow-up (same day):** the dashboard's remaining interactive surfaces exercised in a real browser — campaign step editor (added an EMAIL step, saved, read back from the DB with the exact subject), Team Chat (room create → message → read-back, plus a UI-sent message confirmed in the DB), investment calculators (PITI math spot-checked correct; the price solver reacts live), segments, and lead bulk actions (selection bar with Assign/Tags/Smart Plan/Delete). No defects found; no code changed.
 
 ## v0.67.28 (2026-11-17)
 
